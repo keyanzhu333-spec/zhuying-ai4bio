@@ -37,7 +37,7 @@ def main() -> int:
     if unknown:
         parser.error(f"unknown skills: {', '.join(unknown)}")
     target = args.target.expanduser().resolve()
-    existing = [name for name in names if (target / name).exists()]
+    existing = [name for name in names if (target / name).exists() or (target / name).is_symlink()]
     if existing:
         parser.error(f"already installed (left untouched): {', '.join(existing)}")
 

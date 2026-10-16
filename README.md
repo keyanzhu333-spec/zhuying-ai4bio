@@ -21,12 +21,27 @@ ZY-AI4Bio 是工作流入口，不是新的对接算法或实验验证方法。�
 | 五类体系的分子动力学与绘图 | `gromacs-md` | GROMACS；配体或金属参数化工具按体系配置 |
 | 抗体 Fab 结构预测 | `igfold` | IgFold 和模型权重 |
 | 文献 RSS/Atom 跟踪 | `literature-skill` | 可访问的文献源 |
+| Windows 环境检测与 WSL2 准备 | `zy-ai4bio-wsl2-setup` | 首次安装或转换 WSL 时需 Windows 管理员权限，可能需要重启 |
 
 `zy-ai4bio` 是上述技能的统一路由。数据库查询、序列查看和结构查看还可与 Codex 中另行安装的生命科学数据库、文献和查看器技能协同使用；这些插件不随本仓库安装。
 
+## Windows 用户
+
+Codex 本身可在 Windows 原生运行，并非必须安装 Ubuntu。需要运行本仓库使用 Linux 命令行的分子对接、筛选或分子动力学工具时，推荐让 Codex 在 WSL2 中执行。打开仓库后，可让 Codex 按 [`zy-ai4bio-wsl2-setup`](skills/zy-ai4bio-wsl2-setup/SKILL.md) 检测系统；也可在 Windows PowerShell 中从仓库根目录运行：
+
+```powershell
+& .\skills\zy-ai4bio-wsl2-setup\scripts\ensure_wsl2.ps1
+# 确认需要新建或转换，且已了解管理员权限、重启等影响后：
+& .\skills\zy-ai4bio-wsl2-setup\scripts\ensure_wsl2.ps1 -Apply
+```
+
+已有 WSL2 就复用，只有未安装时才新建 Ubuntu；若只有 WSL1，则优先转换现有发行版，不重置数据。安装或转换可能要求管理员权限、重启和首次创建 Linux 用户。
+
+WSL2 准备完成后，在 Windows 版 Codex 设置中将 **Agent environment** 切换为 **Windows Subsystem for Linux** 并重启应用。随后在 WSL 中克隆本仓库，运行 `bash skills/zy-ai4bio-wsl2-setup/scripts/bootstrap_wsl.sh`，安装缺失的技能文件并检查当前环境能找到哪些科学软件。WSL2 不会自动提供 GROMACS、GNINA、UniDock-Pro、模型权重或化合物库；这些依赖仍需按实际任务配置。
+
 ## 安装
 
-需要 Python 3 和 Codex。克隆仓库后，在仓库根目录运行：
+需要 Python 3 和 Codex。以下命令在 Linux 或 WSL2 的 shell 中运行；Windows 环境准备见上节：
 
 ```bash
 git clone https://github.com/keyanzhu333-spec/zhuying-ai4bio.git
@@ -56,7 +71,7 @@ python3 scripts/install_skills.py
 
 ```text
 zy-ai4bio/                Codex 工作流路由
-skills/                   11 个可独立安装的子技能
+skills/                   12 个可独立安装的子技能
 scripts/install_skills.py 安装器
 docs/                     公众号文案与本地筛选库接入说明
 SKILL.md + scripts/       早期 ZYDock 接口，保留兼容
