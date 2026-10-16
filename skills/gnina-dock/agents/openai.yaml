@@ -1,0 +1,7 @@
+interface:
+  display_name: "GNINA Dock"
+  short_description: "Dock with GNINA CNN scoring; analyze poses with PyMOL and PLIP."
+  default_prompt: "Use $gnina-dock to dock the supplied receptor and ligand with GNINA, then produce PyMOL visualization and PLIP interaction analysis."
+
+policy:
+  allow_implicit_invocation: true

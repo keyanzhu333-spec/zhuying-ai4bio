@@ -1,0 +1,4 @@
+interface:
+  display_name: "GROMACS Multi-Scenario MD"
+  short_description: "Run and plot five biomolecular MD scenarios"
+  default_prompt: "Use $gromacs-md to select and prepare the correct workflow for my single-protein, protein-protein, protein-nucleic-acid, protein-small-molecule, or protein-metal MD system, then analyze and plot the trajectory."

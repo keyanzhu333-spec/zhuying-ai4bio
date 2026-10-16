@@ -1,0 +1,7 @@
+interface:
+  display_name: "DiffDock"
+  short_description: "Cloud DiffDock docking via NVIDIA NIM"
+  default_prompt: "Use $diffdock to dock a ligand against a protein and analyze the predicted binding poses."
+
+policy:
+  allow_implicit_invocation: true

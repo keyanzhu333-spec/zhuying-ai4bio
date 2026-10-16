@@ -1,0 +1,7 @@
+interface:
+  display_name: "UniDock VScreen"
+  short_description: "GPU virtual screening with local UniDock-Pro."
+  default_prompt: "Use $unidock-vscreen to run a UniDock-Pro virtual screen from a receptor PDBQT and ligand library, then rank the top hits."
+
+policy:
+  allow_implicit_invocation: true

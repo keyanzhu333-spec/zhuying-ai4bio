@@ -1,0 +1,7 @@
+interface:
+  display_name: "Reverse Target Screening"
+  short_description: "Screen one compound against many protein targets"
+  default_prompt: "Use $reverse-target-vscreen to screen my compound against a protein target panel and prioritize likely targets."
+
+policy:
+  allow_implicit_invocation: true

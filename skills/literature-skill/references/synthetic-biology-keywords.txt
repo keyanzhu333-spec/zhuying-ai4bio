@@ -1,0 +1,42 @@
+synthetic biology
+metabolic engineering
+metabolic pathway engineering
+pathway engineering
+metabolic pathway
+heterologous expression
+gene circuit
+genetic circuit
+genetic circuits
+regulatory circuit
+synthetic gene network
+cell-free system
+cell-free expression
+cell-free biosynthesis
+microbial cell factory
+cell factory
+chassis cell
+chassis organism
+strain engineering
+genome engineering
+genome-scale engineering
+genome editing
+CRISPR
+CRISPR-Cas
+gene synthesis
+DNA assembly
+Gibson assembly
+Golden Gate assembly
+promoter engineering
+regulatory element
+transcription factor engineering
+biosensor
+orthogonal system
+minimal genome
+biomanufacturing
+fermentation engineering
+de novo pathway
+combinatorial biosynthesis
+pathway optimization
+synthetic consortium
+engineered microorganism
+engineered microbe

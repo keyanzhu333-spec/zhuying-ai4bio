@@ -1,0 +1,4 @@
+interface:
+  display_name: "igFold"
+  short_description: "IgFold antibody Fab modeling workflow"
+  default_prompt: "Use $igfold to model an antibody Fab from VH and VL sequences."

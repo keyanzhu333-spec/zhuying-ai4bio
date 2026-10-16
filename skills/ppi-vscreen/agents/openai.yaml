@@ -1,0 +1,7 @@
+interface:
+  display_name: "PPI Virtual Screening"
+  short_description: "Screen candidate protein interaction partners"
+  default_prompt: "Use $ppi-vscreen to screen a protein library against my target protein with LightDock, Chai-1, and follow-up structural validation."
+
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,6 @@
+interface:
+  display_name: "LightDock"
+  short_description: "Run local protein and nucleic-acid docking"
+  default_prompt: "Use $lightdock to run a local protein-protein, protein-DNA, or protein-RNA docking job from receptor.pdb and ligand.pdb files."
+policy:
+  allow_implicit_invocation: true
