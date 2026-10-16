@@ -1,0 +1,38 @@
+# literature RSS sources
+ACS Catal | https://pubs.acs.org/action/showFeed?type=axatoc&feed=rss&jc=accacs
+Acc.Chem.Res. | https://pubs.acs.org/action/showFeed?type=axatoc&feed=rss&jc=achre4
+ACS Syn Bio | https://pubs.acs.org/action/showFeed?type=axatoc&feed=rss&jc=asbcd6
+ACS:biocatal | https://pubs.acs.org/action/showFeed?ui=0&mi=6rfhqjk&type=search&feed=rss&query=%2526AllField%253DBiocatalysis%2526sortBy%253DEarliest%2526target%253Ddefault%2526targetTab%253Dstd
+JAFC | https://pubs.acs.org/action/showFeed?type=axatoc&feed=rss&jc=jafcau
+JCIM | https://pubs.acs.org/action/showFeed?type=axatoc&feed=rss&jc=jcisd8
+JCTC | https://pubs.acs.org/action/showFeed?type=axatoc&feed=rss&jc=jctcce
+OL | https://pubs.acs.org/action/showFeed?type=axatoc&feed=rss&jc=orlef7
+
+# Previously added sources
+bioRxiv Biochemistry | https://connect.biorxiv.org/biorxiv_xml.php?subject=biochemistry
+bioRxiv Bioengineering | https://connect.biorxiv.org/biorxiv_xml.php?subject=bioengineering
+bioRxiv Bioinformatics | https://connect.biorxiv.org/biorxiv_xml.php?subject=bioinformatics
+bioRxiv Biophysics | https://connect.biorxiv.org/biorxiv_xml.php?subject=biophysics
+bioRxiv Synthetic Biology | https://connect.biorxiv.org/biorxiv_xml.php?subject=synthetic_biology
+ScienceDirect 07349750 | https://rss.sciencedirect.com/publication/science/07349750
+RSC Green Chemistry | http://feeds.rsc.org/rss/gc
+Taylor & Francis ibty20 | https://www.tandfonline.com/feed/rss/ibty20
+Wiley 1521-3773 | https://onlinelibrary.wiley.com/feed/15213773/most-recent
+ScienceDirect 09581669 | https://rss.sciencedirect.com/publication/science/09581669
+PubMed custom search | https://pubmed.ncbi.nlm.nih.gov/rss/search/1-wHEn2QPyPgTif5kg6CkzHS1bkzDYkuhiVF3H4FCMagjXbkS3/?limit=20&utm_campaign=pubmed-2&fc=20251208085418
+Nature Chemical Biology | https://www.nature.com/nchembio.rss
+Nature Machine Intelligence | https://www.nature.com/natmachintell.rss
+Nature Structural & Molecular Biology | https://www.nature.com/nsmb.rss
+Nature Synthesis | https://www.nature.com/natsynth.rss
+Nature Biotechnology | https://www.nature.com/nbt.rss
+Nature | https://www.nature.com/nature.rss
+
+# Newly added sources
+JACS | https://pubs.acs.org/action/showFeed?type=axatoc&feed=rss&jc=jacsat
+Cell | https://rss.sciencedirect.com/publication/science/00928674
+Nature Catalysis | https://www.nature.com/natcatal.rss
+Nature Chemistry | https://www.nature.com/nchem.rss
+PubMed custom search (100 results) | https://pubmed.ncbi.nlm.nih.gov/rss/search/1hgsEQZ6hYlvDh_H10XejYquVEAnU9EfbFFNed8AfpI-m2cMPv/?limit=100&utm_campaign=pubmed-2&fc=20260215120938
+Nature Methods | https://www.nature.com/nmeth.rss
+arXiv Quantitative Biology | https://export.arxiv.org/rss/q-bio
+Science current issue | http://science.sciencemag.org/rss/current.xml

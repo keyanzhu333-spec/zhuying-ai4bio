@@ -1,105 +1,69 @@
-# ZYDock
+# ZY-AI4Bio
 
-**Cloud-based molecular docking + interaction analysis for Codex, all from a gene name and a SMILES string.**
+**面向结构生物学与药物发现的 Codex 技能集。** 从蛋白和配体准备，到分子对接、虚拟筛选、相互作用分析、分子动力学与文献查询，ZY-AI4Bio 根据研究任务选择相应技能，并保留输入、参数和结果。
 
-ZYDock is a Codex skill that runs the full structure-based drug discovery pipeline. No local GPU or DiffDock installation is required. All docking computation runs on NVIDIA's hosted GPUs via the [NVIDIA NIM DiffDock API](https://build.nvidia.com/mit/diffdock).
+ZY-AI4Bio 是工作流入口，不是新的对接算法或实验验证方法。仓库提供技能说明和脚本；科学软件、模型权重、API 凭据及大型化合物库需另行准备。
 
-## What it does
+## 能做什么
 
-Give it a gene name and a ligand SMILES, and it automatically runs:
+| 研究任务 | 仓库内技能 | 需要另行准备 |
+| --- | --- | --- |
+| 蛋白-小分子盲对接 | `diffdock` | NVIDIA DiffDock API 凭据 |
+| 已知口袋对接、CNN 复评分、互作图 | `gnina-dock` | GNINA；绘图和互作分析需 PyMOL、PLIP |
+| 小分子库 GPU 虚拟筛选 | `unidock-vscreen` | UniDock-Pro `udp`、受体和配体 PDBQT |
+| 一个小分子对多个蛋白的反向筛选 | `reverse-target-vscreen` | Open Babel、UniDock-Pro、靶点与口袋清单；后续步骤按需配置 |
+| 蛋白-蛋白、蛋白-DNA/RNA 对接 | `lightdock` | LightDock 和可用的结构文件 |
+| 蛋白互作候选库筛选 | `ppi-vscreen` | LightDock；Chai-1 等复核工具按需配置 |
+| 有实验约束的蛋白-核酸对接 | `haddock3-nucleic-acid` | HADDOCK3 |
+| 序列驱动的复合物结构预测 | `chai1-complex` | Chai-1 和模型权重 |
+| 五类体系的分子动力学与绘图 | `gromacs-md` | GROMACS；配体或金属参数化工具按体系配置 |
+| 抗体 Fab 结构预测 | `igfold` | IgFold 和模型权重 |
+| 文献 RSS/Atom 跟踪 | `literature-skill` | 可访问的文献源 |
 
-```
-Gene name (e.g. EGFR)
-    ↓  fetch structure from UniProt (prefers highest-resolution experimental structure)
-Protein structure (auto-downloaded)
-    ↓  clean heteroatoms, dock via NVIDIA cloud API
-Binding poses + confidence scores
-    ↓  merge complex, run PLIP interaction analysis
-Interactions + two 300-DPI PyMOL figures
-    ↓  parse all parameters
-Bilingual (EN/CN) SCI-grade analysis report
-```
+`zy-ai4bio` 是上述技能的统一路由。数据库查询、序列查看和结构查看还可与 Codex 中另行安装的生命科学数据库、文献和查看器技能协同使用；这些插件不随本仓库安装。
 
-## ZY-AI4Bio extension
+## 安装
 
-The repository also includes the `zy-ai4bio` workflow router for combining docking,
-UniDock-Pro virtual screening, GNINA/PLIP analysis, molecular dynamics, structure
-and sequence viewers, public life-science databases, and literature workflows.
-
-- [ZY-AI4Bio public-account article](docs/zy-ai4bio-public-account.md)
-- [Virtual-screening library status](docs/virtual-screening-library.md)
-- [ZY-AI4Bio skill](zy-ai4bio/SKILL.md)
-
-## Key features
-
-- **Codex-ready** — includes `SKILL.md` and `agents/openai.yaml` so Codex can discover and invoke the skill
-- **No local compute** — docking runs on NVIDIA's hosted GPUs; you only need an API key
-- **Auto structure retrieval** — give a gene/protein name; it searches UniProt and picks the best experimentally-solved structure (highest resolution), falling back to AlphaFold if none exists (defaults to human, configurable species)
-- **Automatic receptor cleaning** — strips crystallographic waters, ions, buffer additives and co-crystallized ligands before docking
-- **Interaction profiling** — PLIP detects hydrogen bonds, hydrophobic contacts, salt bridges, halogen bonds, π-stacking, etc.
-- **Publication-quality figures** — two 300-DPI ray-traced PyMOL images (whole-complex overview + labelled binding-site close-up)
-- **Bilingual SCI reports** — auto-generated Materials & Methods + Results in both English and Chinese
-- **Batch virtual screening** — one CSV → full pipeline for every compound + a ranked master summary
-- **Secure by design** — the API key is stored *outside* the skill directory (`~/.config/ZYDock/`, chmod 600); the repo contains no keys and is safe to share
-
-## Requirements
-
-- An [NVIDIA API key](https://build.nvidia.com) (free to obtain; `nvapi-...`)
-- Python 3
-- For interaction analysis/figures: a conda environment named `PLIP` (auto-created by `scripts/setup_plip.py`) with `plip`, `pymol-open-source`, and `openbabel`
-
-## Quick start
+需要 Python 3 和 Codex。克隆仓库后，在仓库根目录运行：
 
 ```bash
-# 1. Save your NVIDIA API key (stored outside the skill, only needed once)
-python scripts/set_key.py nvapi-xxxxxxxx
-
-# 2. Dock a ligand to a target by gene name
-python scripts/dock_single.py --gene EGFR \
-  --ligand "COc1cc2ncnc(Nc3ccc(F)c(Cl)c3)c2cc1OCCCN1CCOCC1" \
-  --out_dir results/docking --num_poses 10
-
-# 3. Analyze interactions + render figures + generate report
-python scripts/analyze_interactions.py \
-  --protein results/docking/EGFR_structure.pdb \
-  --ligand results/docking/rank1_conf*.sdf \
-  --out_dir results/interactions --gene_label EGFR --accession P00533
+git clone https://github.com/keyanzhu333-spec/zhuying-ai4bio.git
+cd zhuying-ai4bio
+python3 scripts/install_skills.py --list
+python3 scripts/install_skills.py --dry-run
+python3 scripts/install_skills.py
 ```
 
-### Batch virtual screening (end-to-end)
+安装器默认复制到 `${CODEX_HOME:-$HOME/.codex}/skills`，遇到已存在的同名技能会停止并保留原文件。也可以用 `--skills zy-ai4bio diffdock gnina-dock` 只安装所需技能，或用 `--target` 指定测试目录。安装技能文件后，还需按上表配置实际计算软件。UniDock-Pro 路径可用 `UNIDOCK_PRO_BIN` 指定，或通过 `--udp` 传入。
 
-```bash
-python scripts/batch_full.py --csv compounds.csv --out_dir results/screen/ --num_poses 10
+## 从研究问题开始
+
+在 Codex 中可以这样描述任务：
+
+> 用 EGFR 蛋白和阿司匹林探索可能的结合构象，保存结构、相互作用图和计算参数。
+
+> 用准备好的受体 PDBQT 和配体库 `ligand_index.txt` 运行 UniDock-Pro 筛选，列出得分靠前的候选物与失败记录。
+
+> 对一个蛋白-DNA 复合物使用实验约束进行 HADDOCK3 对接；检查约束满足情况和界面残基。
+
+> 为蛋白-小分子复合物建立 GROMACS 模拟项目，先检查拓扑并做短程测试，再分析轨迹。
+
+不同任务采用不同的结果目录。UniDock-Pro 筛选项目使用 `inputs/`、`docking/`、`report/`；分子动力学项目使用 `inputs/`、`simulation/`、`analysis/`。详见各技能的 `SKILL.md`。
+
+## 仓库结构
+
+```text
+zy-ai4bio/                Codex 工作流路由
+skills/                   11 个可独立安装的子技能
+scripts/install_skills.py 安装器
+docs/                     公众号文案与本地筛选库接入说明
+SKILL.md + scripts/       早期 ZYDock 接口，保留兼容
 ```
 
-CSV columns: `complex_name, gene, protein_path, ligand_smiles, protein_sequence, organism, accession`
-(see [`assets/batch_template.csv`](assets/batch_template.csv)). The ligand only needs a **SMILES** string.
+大型筛选库的 SDF、PDBQT、SQLite 和原始下载文件不包含在 Git 仓库中。已有本地库可通过 `ligand_index.txt` 接入 UniDock-Pro；数据准备、来源和质量控制见[虚拟筛选库说明](docs/virtual-screening-library.md)。
 
-## Scripts
+## 如何解读结果
 
-| Script | Purpose |
-|--------|---------|
-| `set_key.py` | Save/show/clear the NVIDIA API key (stored outside the skill) |
-| `check_api.py` | Verify API connectivity |
-| `fetch_structure.py` | Gene/protein name → UniProt → best experimental structure → download |
-| `dock_single.py` | Single protein–ligand docking |
-| `dock_batch.py` | Batch docking (docking only) |
-| `analyze_results.py` | Confidence-score analysis and ranking |
-| `setup_plip.py` | Detect/create the `PLIP` conda environment |
-| `analyze_interactions.py` | Merge complex → PLIP → PyMOL figures → report |
-| `generate_report.py` | Generate the bilingual SCI-grade report |
-| `batch_full.py` | End-to-end batch pipeline for every compound |
+DiffDock 置信度描述候选构象，GNINA 和 UniDock-Pro 分数用于同一设置下的候选排序。它们不是实验结合亲和力；跨靶点比较需要校准。分子动力学结果依赖力场、参数、采样长度与收敛情况，MM/PBSA 仅在体系和轨迹通过检查时作为可选分析。计算结论应与结构证据、文献及实验结果分别报告。
 
-## Important notes
-
-- DiffDock predicts **binding poses** and **confidence**, **not binding affinity** (ΔG/Kd). For affinity, combine with a scoring function (GNINA, MM/GBSA).
-- Confidence scores reflect model certainty about the pose, not binding strength.
-- Predicted poses should be experimentally validated.
-
-## Security
-
-Never commit API keys. This repository contains only placeholders (`nvapi-xxxxxxxx`). Your real key lives in `~/.config/ZYDock/credentials` (outside the repo, chmod 600). If a key is ever exposed, revoke and regenerate it at [build.nvidia.com](https://build.nvidia.com).
-
-## License
-
-MIT
+项目介绍可参考[公众号文案](docs/zy-ai4bio-public-account.md)。仓库代码采用 [MIT License](LICENSE)；外部软件和数据遵循各自许可证。

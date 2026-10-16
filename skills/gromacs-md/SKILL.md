@@ -1,0 +1,93 @@
+---
+name: gromacs-md
+description: Prepare, run, troubleshoot, analyze, and plot GROMACS molecular dynamics for single proteins, protein-protein complexes, protein-DNA/RNA complexes, protein-small-molecule complexes, and protein-metal systems. Use when Codex needs to choose a scientifically appropriate MD setup, generate ligand or metal-aware parameters, run minimization/equilibration/production, analyze trajectories, make publication-ready plots, or perform carefully validated MM/PBSA calculations.
+---
+
+# GROMACS Multi-Scenario MD
+
+Use one skill with five scenario branches. Keep each project under exactly three top-level directories:
+
+```text
+<project>/
+├── inputs/
+├── simulation/
+└── analysis/
+```
+
+Do not launch a long production run unless the user explicitly asks. Prefer preparation, topology validation, minimization, and a short restrained or unrestrained test before consuming substantial compute time.
+
+## Select The Scenario
+
+Classify the system before choosing commands or force fields:
+
+| Scenario | Trigger | Main special handling |
+|---|---|---|
+| `single-protein` | One protein or oligomer studied without another biomolecular partner | Missing residues, termini, protonation, disulfides, oligomeric state |
+| `protein-protein` | Two or more interacting protein partners | Preserve chain identity; build partner and interface groups |
+| `protein-nucleic-acid` | Protein-DNA or protein-RNA complex | Use a compatible protein/nucleic-acid force-field family; preserve meaningful ions |
+| `protein-small-molecule` | Protein plus organic ligand, drug, substrate, or inhibitor | Parameterize ligand charge and bonded terms with a validated, force-field-compatible workflow |
+| `protein-metal` | Protein coordinated to a metal ion or metal cofactor | Establish oxidation state, coordination model, geometry, charge, and spin before topology generation |
+
+Read `references/scenario-workflows.md` for the scenario-specific setup, validation, and analysis requirements. Do not force a system into the protein-ligand template merely because non-protein atoms are written as `HETATM`.
+
+## Initialize A Case
+
+Create the three-directory layout and scenario manifest:
+
+```bash
+python3 scripts/init_md_case.py \
+  --scenario protein-protein \
+  --input complex.pdb \
+  --out-dir <project>
+```
+
+## Preflight
+
+1. Confirm biological assembly, chains, residue names, alternate conformations, missing atoms/residues, termini, disulfides, protonation, cofactors, ions, crystallographic waters, and nonstandard residues.
+2. Record the intended force field, water model, ionic strength, temperature, pressure, box type, padding, timestep, restraints, equilibration schedule, production duration, and replicate count before production.
+3. Keep protein, nucleic acid, ligand, metal, and solvent parameters mutually compatible. Do not combine force fields based only on matching file formats.
+4. Generate selections by names and expressions where possible. Inspect `index.ndx`; never trust numeric group IDs copied from another system.
+5. Review every `gmx grompp` warning. Resolve the cause instead of adding `-maxwarn` by habit.
+6. Check total charge, atom count, molecule count, bonded connectivity, coordinate/topology ordering, and periodic box before minimization.
+
+## Common Simulation Stages
+
+Use the same gated progression for all scenarios:
+
+1. **Preparation:** clean a copy of the structure and preserve provenance of the original input.
+2. **Topology:** generate standard biomolecule topology, then add validated parameters for ligands, metals, and other nonstandard groups.
+3. **System construction:** define the box, solvate, add ions, and create named analysis groups.
+4. **Energy minimization:** inspect convergence, maximum force, geometry, clashes, and restrained special sites.
+5. **NVT/NPT equilibration:** inspect temperature, pressure, density, box stability, restraint behavior, and any metal/interface geometry.
+6. **Production:** run only after the short validation is clean; prefer multiple independent replicas over one unsupported narrative from a single trajectory.
+7. **Trajectory processing:** remove PBC artifacts, make molecules whole, center consistently, and fit using a stated selection before analysis.
+8. **Analysis and plotting:** calculate common and scenario-specific metrics, assess convergence, and retain commands, selections, frame ranges, and units.
+
+## Analysis And Plotting
+
+At minimum assess simulation health plus structural stability. Add scenario-specific metrics from `references/analysis-and-plotting.md`.
+
+Generate consistent PNG/PDF plots from GROMACS XVG files:
+
+```bash
+python3 scripts/plot_md_metrics.py \
+  --scenario protein-nucleic-acid \
+  --input-dir <project>/analysis/xvg \
+  --out-dir <project>/analysis/figures \
+  --formats png,pdf
+```
+
+The plotting tool recursively discovers XVG files, honors embedded titles and axis labels, and writes `plot_index.csv`. Validate specialized PCA/FEL or MM/PBSA analyses separately before reporting them.
+
+## Reporting Requirements
+
+Report enough detail for another researcher to reproduce and judge the run:
+
+- Input structure identity and all structural edits
+- Scenario, force field, water model, special parameter sources, and software versions
+- Box, ions, thermodynamic settings, restraints, timestep, stage durations, replicas, and random seeds
+- PBC treatment, fitting group, analysis selections, frame interval, and units
+- Equilibration evidence, convergence limitations, failed checks, and excluded frames
+- Scenario-specific interaction or coordination metrics, with uncertainty or replicate variation when available
+
+Do not describe docking score, one RMSD trace, one MM/PBSA number, or a short trajectory as proof of biological binding or mechanism.

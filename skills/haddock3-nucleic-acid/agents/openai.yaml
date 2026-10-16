@@ -1,0 +1,7 @@
+interface:
+  display_name: "HADDOCK3 Nucleic-Acid Docking"
+  short_description: "Run local protein-DNA/RNA docking with HADDOCK3"
+  default_prompt: "Use $haddock3-nucleic-acid to dock and refine a protein with a DNA or RNA structure using local HADDOCK3."
+
+policy:
+  allow_implicit_invocation: true

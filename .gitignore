@@ -9,6 +9,8 @@ venv/
 credentials
 *.key
 .env
+runtime_manifest.json
+runtime/
 
 # Docking / analysis outputs (generated at runtime)
 results/

@@ -1,0 +1,39 @@
+computational simulation
+computer simulation
+molecular simulation
+molecular dynamics
+MD simulation
+enhanced sampling
+free energy calculation
+binding free energy
+quantum chemistry
+QM/MM
+density functional theory
+DFT
+ab initio
+coarse-grained
+force field
+neural network potential
+machine-learned force field
+ML potential
+AI model
+machine learning model
+deep learning
+model training
+pretraining
+fine-tuning
+foundation model
+language model
+large language model
+LLM
+generative model
+diffusion model
+transformer
+graph neural network
+GNN
+active learning
+self-supervised learning
+representation learning
+transfer learning
+training dataset
+benchmark

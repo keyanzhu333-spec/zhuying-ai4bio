@@ -1,0 +1,7 @@
+interface:
+  display_name: "Chai-1 Complex Prediction"
+  short_description: "Predict local protein-DNA/RNA complex structures"
+  default_prompt: "Use $chai1-complex to predict a protein-DNA or protein-RNA complex structure from local sequences with Chai-1."
+
+policy:
+  allow_implicit_invocation: true

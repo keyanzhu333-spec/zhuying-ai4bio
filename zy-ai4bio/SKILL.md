@@ -1,11 +1,13 @@
 ---
 name: zy-ai4bio
-description: AI-for-biology workflow router that coordinates installed Codex skills for molecular docking, UniDock-Pro virtual screening, GNINA/GVINA-style CNN rescoring, molecular dynamics, antibody structure prediction, protein and sequence visualization, life-science databases, and biomedical literature. Use when the user asks for a broad bioinformatics, computational biology, structural biology, drug discovery, virtual screening, docking-to-MD, antibody modeling, database/literature lookup, or multi-step AI4Bio workflow and wants Codex to choose the right skill(s).
+description: AI-for-biology workflow router that coordinates installed Codex skills for molecular docking, reverse target screening, protein-nucleic-acid complex prediction, UniDock-Pro virtual screening, GNINA/GVINA-style CNN rescoring, molecular dynamics, antibody structure prediction, protein and sequence visualization, life-science databases, and biomedical literature. Use when the user asks for a broad bioinformatics, computational biology, structural biology, drug discovery, forward or reverse virtual screening, docking-to-MD, protein-DNA/RNA modeling, antibody modeling, database/literature lookup, or multi-step AI4Bio workflow and wants Codex to choose the right skill(s).
 ---
 
 # ZY-AI4bio
 
 Use this as the top-level coordinator for biology and drug-discovery tasks. Route to the most specific installed skill first; use this skill to combine them when a task spans multiple domains.
+
+The sibling skills under `skills/` are bundled with this repository, but their scientific software and model weights are separate dependencies. Database, literature API, sequence-viewer, and structure-viewer plugin skills are optional Codex integrations. Check that a child skill and its runtime are available before routing work to it, and report a missing dependency when a requested stage cannot run.
 
 ## Routing
 
@@ -13,9 +15,13 @@ Read `references/skill-map.md` when the task is broad, ambiguous, or involves mo
 
 - For protein-small molecule blind docking with NVIDIA DiffDock API, use `diffdock`.
 - For large ligand-library virtual screening with local UniDock-Pro, use `unidock-vscreen`.
+- For reverse virtual screening of one small molecule against many protein targets, use `reverse-target-vscreen` to coordinate Open Babel, UniDock-Pro, GNINA, DiffDock, Chai-1, PLIP, and structure inspection.
 - For prepared receptor-ligand docking with GNINA CNN rescoring, PyMOL visualization, and PLIP interaction analysis, use `gnina-dock`.
-- For protein-protein docking, use `lightdock`.
-- For docking follow-up MD, trajectory analysis, or MM/PBSA, use `gromacs-md`.
+- For protein-protein, protein-DNA, or protein-RNA docking, use `lightdock`.
+- For virtual screening of a protein library against one target protein, use `ppi-vscreen` to orchestrate LightDock, Chai-1, optional verified HADDOCK3 protein-protein refinement, and structural validation.
+- For restraint-guided protein-DNA/RNA docking and HADDOCK3 refinement from PDB structures, use `haddock3-nucleic-acid`.
+- For sequence-based protein-DNA/RNA complex structure prediction with local Chai-1, use `chai1-complex`.
+- For single-protein, protein-protein, protein-nucleic-acid, protein-small-molecule, or protein-metal MD, plus trajectory analysis, plotting, or carefully validated MM/PBSA, use `gromacs-md`.
 - For antibody, Fab, or nanobody structure prediction, use `igfold`.
 - For local molecular structure inspection or rendering, use `structure-viewer:structure-viewer`.
 - For FASTA, FASTQ, GenBank, alignments, variants, or chromatograms, use `sequence-viewer:biological-sequence-viewer`.
@@ -34,7 +40,10 @@ Read `references/skill-map.md` when the task is broad, ambiguous, or involves mo
 ## Common Chains
 
 - Target plus compound: `life-sciences-databases:uniprot-skill` or `life-sciences-databases:pubchem-pug-skill` for identifiers, then `diffdock` for blind DiffDock docking, `unidock-vscreen` for large prepared PDBQT libraries, or `gnina-dock` when prepared structures and a binding box/reference ligand are available, then `gromacs-md` for MD if requested.
+- Compound target fishing: use `reverse-target-vscreen` for one compound against a receptor panel, then execute its GNINA, DiffDock, Chai-1, and PLIP/structure-viewer queues in that order.
 - Protein-protein mechanism: database lookup, structure retrieval via `life-sciences-databases:rcsb-pdb-skill` or local files, then `lightdock`.
+- Protein-protein interaction screening: use `ppi-vscreen` for candidate-library preparation, uniform LightDock first-pass screening, Chai-1 shortlist prediction, and optional verified structure/refinement follow-up.
+- Protein-nucleic-acid mechanism: retrieve or inspect protein and DNA/RNA structures with `life-sciences-databases:rcsb-pdb-skill` and `structure-viewer:structure-viewer`; use `haddock3-nucleic-acid` when restraints or refinement are needed, `lightdock` for blind PDB-to-PDB candidate poses, or `chai1-complex` when the starting point is sequence-based complex prediction.
 - Antibody workflow: `igfold` for VH/VL modeling, `structure-viewer:structure-viewer` for inspection, then a docking skill if the user asks for interaction modeling.
 - Evidence workflow: database skills for structured facts, literature skills for papers, `literature-skill` for RSS monitoring or daily alerts, then summarize evidence levels and limitations without overclaiming.
 

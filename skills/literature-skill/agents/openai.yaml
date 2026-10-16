@@ -1,0 +1,7 @@
+interface:
+  display_name: "Literature Skill"
+  short_description: "Topic alerts from literature feeds"
+  default_prompt: "Use $literature-skill to monitor RSS feeds from the last 24 hours and summarize topic-relevant research progress."
+
+policy:
+  allow_implicit_invocation: true
