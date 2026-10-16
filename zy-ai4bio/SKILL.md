@@ -1,6 +1,6 @@
 ---
 name: zy-ai4bio
-description: AI-for-biology workflow router that coordinates installed Codex skills for molecular docking, reverse target screening, protein-nucleic-acid complex prediction, UniDock-Pro virtual screening, GNINA/GVINA-style CNN rescoring, molecular dynamics, antibody structure prediction, protein and sequence visualization, life-science databases, and biomedical literature. Use when the user asks for a broad bioinformatics, computational biology, structural biology, drug discovery, forward or reverse virtual screening, docking-to-MD, protein-DNA/RNA modeling, antibody modeling, database/literature lookup, or multi-step AI4Bio workflow and wants Codex to choose the right skill(s).
+description: AI-for-biology workflow router that coordinates Codex skills for docking, screening, complex prediction, molecular dynamics, antibody modeling, visualization, databases, and literature, plus Windows/WSL2 environment setup. Use for broad or multi-step structural biology and drug-discovery tasks, or when a Windows user needs the local scientific workflows prepared under WSL2.
 ---
 
 # ZY-AI4bio
@@ -8,6 +8,8 @@ description: AI-for-biology workflow router that coordinates installed Codex ski
 Use this as the top-level coordinator for biology and drug-discovery tasks. Route to the most specific installed skill first; use this skill to combine them when a task spans multiple domains.
 
 The sibling skills under `skills/` are bundled with this repository, but their scientific software and model weights are separate dependencies. Database, literature API, sequence-viewer, and structure-viewer plugin skills are optional Codex integrations. Check that a child skill and its runtime are available before routing work to it, and report a missing dependency when a requested stage cannot run.
+
+For a Windows user who needs Linux-oriented local computation, use `zy-ai4bio-wsl2-setup` to detect and reuse an existing WSL2 distribution or prepare one when absent. Native Windows Codex can still use skills that do not require Linux executables; do not treat WSL2 as mandatory for every request. Before running shell-based scientific workflows, verify the Codex agent is actually executing in WSL2 and the required scientific software is installed there.
 
 ## Routing
 
@@ -28,6 +30,7 @@ Read `references/skill-map.md` when the task is broad, ambiguous, or involves mo
 - For public biological database lookups, use the relevant `life-sciences-databases:*` skill.
 - For RSS/Atom literature monitoring, daily research alerts, and topic-filtered paper updates, use `literature-skill`.
 - For biomedical literature and PubMed/PMC/preprint lookups, use the relevant `life-sciences-literature:*` skill.
+- For Windows OS detection, WSL2 provisioning, and installing the skill collection into WSL2, use `zy-ai4bio-wsl2-setup`.
 
 ## Workflow Pattern
 

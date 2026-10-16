@@ -1,0 +1,4 @@
+interface:
+  display_name: "ZY-AI4Bio Windows / WSL2 Setup"
+  short_description: "Detect Windows and prepare a reusable WSL2 skill runtime"
+  default_prompt: "Use $zy-ai4bio-wsl2-setup to check my Windows environment, reuse or set up WSL2 if needed, and prepare ZY-AI4Bio skills there."
