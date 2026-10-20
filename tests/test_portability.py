@@ -62,6 +62,54 @@ class InstallationTests(unittest.TestCase):
         with patch.dict(os.environ, {"GMX_BIN": "nonexistent-zy-test-command"}):
             self.assertFalse(module.resolve_command(("GMX_BIN",), ("gmx",))["available"])
 
+    def test_update_keeps_backup_and_local_resources(self):
+        installer = load("scripts/install_skills.py")
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source, target = root / "source", root / "installed"
+            source.mkdir()
+            (source / "SKILL.md").write_text("new version")
+            old = target / "example"
+            (old / "runtime").mkdir(parents=True)
+            (old / "runtime/engine").write_text("local executable")
+            (old / ".env").write_text("private configuration")
+            (old / "SKILL.md").write_text("old version")
+            with patch.object(installer, "SOURCES", {"example": source}):
+                self.assertEqual(main(installer, ["--target", target, "--update"]), 0)
+            self.assertEqual((old / "SKILL.md").read_text(), "new version")
+            self.assertEqual((old / "runtime/engine").read_text(), "local executable")
+            self.assertEqual((old / ".env").read_text(), "private configuration")
+            backup = next((root / "skill-backups").iterdir()) / "example"
+            self.assertEqual((backup / "SKILL.md").read_text(), "old version")
+            self.assertTrue((backup / "runtime/engine").is_file())
+            self.assertEqual(json.loads((old / ".zy-ai4bio-install.json").read_text())["skill"], "example")
+
+    def test_failed_update_rolls_back_all_skills(self):
+        installer = load("scripts/install_skills.py")
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            sources, target = {}, root / "installed"
+            for name in ("a", "b"):
+                source = root / "source" / name
+                source.mkdir(parents=True)
+                (source / "SKILL.md").write_text("new")
+                old = target / name
+                old.mkdir(parents=True)
+                (old / "SKILL.md").write_text("old")
+                sources[name] = source
+            rename = Path.rename
+
+            def fail_second(path, destination):
+                if path.name == "b" and path.parent.name.startswith(".zy-ai4bio-update-"):
+                    raise OSError("simulated installation failure")
+                return rename(path, destination)
+
+            with patch.object(installer, "SOURCES", sources), patch.object(Path, "rename", fail_second):
+                with self.assertRaises(OSError):
+                    main(installer, ["--target", target, "--update"])
+            for name in sources:
+                self.assertEqual((target / name / "SKILL.md").read_text(), "old")
+
 
 class RuntimeTests(unittest.TestCase):
     def test_chai_output_is_empty_at_launch(self):
@@ -181,6 +229,13 @@ class MDTests(unittest.TestCase):
 
 
 class PrivacyTests(unittest.TestCase):
+    def test_package_version_is_not_a_host_ip(self):
+        scanner = load("scripts/check_portability.py")
+        version = ".".join(("3", "2", "0", "1"))
+        self.assertFalse(list(scanner.scan_text("pip install example-wheel==" + version)))
+        host = ".".join(("192", "168", "10", "20"))
+        self.assertTrue(list(scanner.scan_text("SERVER_IP=" + host)))
+
     def test_detector_does_not_print_secrets(self):
         scanner = load("scripts/check_portability.py")
         private = "/".join(["", "home", "example-user", "project"])

@@ -65,6 +65,12 @@ python3 scripts/check_environment.py --versions --json environment-report.json
 
 安装器默认复制到 `${CODEX_HOME:-$HOME/.codex}/skills`，遇到已存在的同名技能会停止并保留原文件。也可以用 `--skills zy-ai4bio diffdock gnina-dock` 只安装所需技能，或用 `--target` 指定测试目录。安装技能文件后，还需按上表配置实际计算软件。UniDock-Pro 路径可用 `UNIDOCK_PRO_BIN` 指定，或通过 `--udp` 传入。
 
+已安装的用户可在仓库目录运行 `git pull --ff-only`，再运行
+`python3 scripts/install_skills.py --update`。更新前自动备份旧技能，保留本机运行时和
+私有配置；下一轮 Codex 对话即可使用更新后的技能。
+
+本次更新内容见 [2026-10-20 更新记录](docs/updates/2026-10-20.md)。
+
 完整的跨电脑部署、Windows/WSL2、外部数据和隐私规则见
 [可移植安装说明](docs/portable-installation.md)。
 
