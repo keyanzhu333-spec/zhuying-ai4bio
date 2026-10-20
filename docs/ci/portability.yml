@@ -1,0 +1,22 @@
+name: Portability
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  offline:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ['3.10', '3.12']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m unittest discover -s tests -v
+      - run: python scripts/check_portability.py
+      - if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          while IFS= read -r -d '' script; do bash -n "$script"; done < <(find skills -name '*.sh' -print0)

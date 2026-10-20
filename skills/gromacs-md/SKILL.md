@@ -87,15 +87,16 @@ Dry-run the exact commands first:
 ```bash
 python3 scripts/run_md_stages.py \
   --project <project> \
-  --through npt \
+  --from-stage em \
   --dry-run
 ```
 
-Then run minimization and equilibration after reviewing `simulation/mdp/` and
-the complete topology:
+Run one stage at a time and review its energies and geometry before advancing:
 
 ```bash
-python3 scripts/run_md_stages.py --project <project> --through npt
+python3 scripts/run_md_stages.py --project <project> --from-stage em
+python3 scripts/run_md_stages.py --project <project> --from-stage nvt
+python3 scripts/run_md_stages.py --project <project> --from-stage npt
 ```
 
 Production is gated and requires explicit approval:
@@ -103,7 +104,7 @@ Production is gated and requires explicit approval:
 ```bash
 python3 scripts/run_md_stages.py \
   --project <project> \
-  --through production \
+  --from-stage production \
   --approve-production
 ```
 
@@ -111,6 +112,18 @@ The default accelerator is CPU for portability. Use `--accelerator gpu` only
 after `check_gromacs.py` and a short test confirm a compatible GROMACS/CUDA
 runtime. Override the executable with `--gmx` or `GMX_BIN`. The runner does not
 add `-maxwarn`; a nonzero allowance must be supplied explicitly and justified.
+`simulation/run_config.json` paths are resolved relative to the project.
+Existing stage outputs are preserved. To resume one interrupted stage use
+`--from-stage STAGE --resume`; production also requires `--approve-production`.
+Continuation reuses the existing TPR and checkpoint and verifies local input
+checksums. A successful command is not an equilibration or convergence verdict.
+For an external MPI GROMACS build use `--external-mpi`; multi-node launch is
+managed by the site's scheduler.
+
+The provided cutoff/dispersion settings are an AMBER-style aqueous starting
+point, not a preset for CHARMM force switching, membranes, nonaqueous solvents,
+or every metal model. Edit the MDPs for the selected force field. The templates
+require GROMACS with C-rescale support and POSRES-enabled topology includes.
 
 ## Analysis And Plotting
 

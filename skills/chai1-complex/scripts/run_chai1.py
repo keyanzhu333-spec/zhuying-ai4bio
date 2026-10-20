@@ -16,7 +16,10 @@ from pathlib import Path
 def command_prefix(requested: str | None, conda_env: str) -> list[str]:
     value = requested or os.environ.get("CHAI1_BIN") or shutil.which("chai-lab")
     if value:
-        return [str(Path(value).expanduser())]
+        resolved = shutil.which(os.path.expanduser(value))
+        if not resolved:
+            raise SystemExit("Configured chai-lab executable is missing or not executable.")
+        return [str(Path(resolved).resolve())]
     conda = shutil.which("conda") or shutil.which("mamba") or shutil.which("micromamba")
     if conda:
         return [conda, "run", "-n", conda_env, "chai-lab"]
@@ -29,10 +32,11 @@ def main() -> int:
     parser.add_argument("--out-dir", required=True, type=Path)
     parser.add_argument("--chai", help="Path to chai-lab")
     parser.add_argument("--conda-env", default="chai1")
-    parser.add_argument("--device", choices=("cpu", "cuda"))
+    parser.add_argument("--device", help="cpu, cuda, or cuda:N")
     parser.add_argument("--num-diffn-samples", type=int)
     parser.add_argument("--dry-run", action="store_true")
-    args, extra = parser.parse_known_args()
+    parser.add_argument("extra", nargs=argparse.REMAINDER, help="Upstream options after --")
+    args = parser.parse_args()
 
     source = args.input.expanduser().resolve()
     output = args.out_dir.expanduser().resolve()
@@ -44,7 +48,7 @@ def main() -> int:
     )
     if not first_content.startswith(">"):
         parser.error(f"input does not begin with a FASTA header: {source}")
-    if output.exists() and any(output.iterdir()):
+    if output.exists() and (not output.is_dir() or any(output.iterdir())):
         parser.error(f"output directory is not empty: {output}")
     if args.num_diffn_samples is not None and args.num_diffn_samples < 1:
         parser.error("--num-diffn-samples must be positive")
@@ -54,15 +58,16 @@ def main() -> int:
         command.extend(["--device", args.device])
     if args.num_diffn_samples:
         command.extend(["--num-diffn-samples", str(args.num_diffn_samples)])
-    command.extend(extra)
+    command.extend(args.extra[1:] if args.extra[:1] == ["--"] else args.extra)
     print(shlex.join(command))
     if args.dry_run:
         return 0
 
-    output.mkdir(parents=True, exist_ok=True)
-    log = output / "chai1.log"
-    with log.open("w", encoding="utf-8") as handle:
+    output.parent.mkdir(parents=True, exist_ok=True)
+    log = output.with_name(output.name + ".chai1.log")
+    with log.open("x", encoding="utf-8") as handle:
         proc = subprocess.run(command, stdout=handle, stderr=subprocess.STDOUT, check=False)
+    output.mkdir(parents=True, exist_ok=True)
     record = {
         "schema_version": 1,
         "created_utc": datetime.now(timezone.utc).isoformat(),

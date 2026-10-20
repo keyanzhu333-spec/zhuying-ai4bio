@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import shutil
 from string import Template
 from datetime import datetime, timezone
@@ -72,14 +73,17 @@ def main() -> int:
     args = parser.parse_args()
 
     for name in ("temperature", "pressure", "nvt_ns", "npt_ns", "production_ns"):
-        if getattr(args, name) <= 0:
-            parser.error(f"--{name.replace('_', '-')} must be positive")
+        if not math.isfinite(getattr(args, name)) or getattr(args, name) <= 0:
+            parser.error(f"--{name.replace('_', '-')} must be finite and positive")
+    for name in ("nvt_ns", "npt_ns", "production_ns"):
+        if ns_to_steps(getattr(args, name)) < 1:
+            parser.error(f"--{name.replace('_', '-')} must contain at least one timestep")
 
     source = args.input.expanduser().resolve()
     out_dir = args.out_dir.expanduser().resolve()
     if not source.is_file():
         parser.error(f"input file does not exist: {source}")
-    if out_dir.exists() and any(out_dir.iterdir()):
+    if out_dir.exists() and (not out_dir.is_dir() or any(out_dir.iterdir())):
         parser.error(f"output directory is not empty: {out_dir}")
 
     inputs = out_dir / "inputs"
@@ -108,8 +112,8 @@ def main() -> int:
         "schema_version": 1,
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "scenario": args.scenario,
-        "source_input": str(source),
-        "copied_input": str(copied_input),
+        "source_input": source.name,
+        "copied_input": copied_input.relative_to(out_dir).as_posix(),
         "input_sha256": sha256(copied_input),
         "top_level_directories": ["inputs", "simulation", "analysis"],
         "md_parameters": {

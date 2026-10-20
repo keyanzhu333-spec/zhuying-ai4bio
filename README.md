@@ -41,7 +41,7 @@ WSL2 准备完成后，在 Windows 版 Codex 设置中将 **Agent environment** 
 
 ## 安装
 
-需要 Python 3 和 Codex。以下命令在 Linux 或 WSL2 的 shell 中运行；Windows 环境准备见上节：
+需要 Python 3.10 或更新版本和 Codex。以下命令在 Linux 或 WSL2 的 shell 中运行；Windows 环境准备见上节：
 
 ```bash
 git clone https://github.com/keyanzhu333-spec/zhuying-ai4bio.git
@@ -57,7 +57,8 @@ python3 scripts/install_skills.py
 python3 scripts/check_environment.py --versions --json environment-report.json
 ```
 
-报告只记录软件可用性和路径，不显示 API Key 的内容。可执行程序路径可通过
+报告默认隐藏本机绝对路径，不显示 API Key 的内容；本机排查时可加 `--private-paths`。
+可执行程序路径可通过
 [`config/tools.example.env`](config/tools.example.env) 中的环境变量覆盖；大型数据库、
 模型权重和缓存建议放在仓库外的 `ZY_AI4BIO_DATA`，并参考
 [`config/resources.example.json`](config/resources.example.json) 记录来源、许可证、格式和校验和。
@@ -66,6 +67,11 @@ python3 scripts/check_environment.py --versions --json environment-report.json
 
 完整的跨电脑部署、Windows/WSL2、外部数据和隐私规则见
 [可移植安装说明](docs/portable-installation.md)。
+
+已增加离线回归测试、Linux/Windows 自动测试配置模板，以及可单独运行的
+GROMACS 小水盒实跑测试。自动测试模板尚需有工作流权限的账号启用。
+测试方法和各技能的软件安装入口均在上述说明中。
+安装技能文件与安装科学软件是两个步骤；运行前请在所选环境中检查依赖。
 
 ## 从研究问题开始
 

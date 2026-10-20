@@ -37,6 +37,11 @@ def find_runtime_python(skill_dir: Path) -> str:
     launcher started with Python 3.13 can still run GNINA, but using that same
     interpreter for ``run_pymol.py`` fails with ``No module named pymol._cmd``.
     """
+    override = os.environ.get("GNINA_PYTHON")
+    if override:
+        return resolve_executable(override)
+    if not (skill_dir / "runtime_pymol_whl").is_dir():
+        return sys.executable
     candidates = [
         os.environ.get("GNINA_PYTHON"),
         str(skill_dir / ".venv" / "bin" / "python"),
@@ -648,8 +653,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--docker-gpus", action="store_true")
     parser.add_argument("--receptor-pdb", type=Path)
     parser.add_argument("--complex-pdb", type=Path)
-    parser.add_argument("--pymol-bin")
-    parser.add_argument("--plip-bin")
+    parser.add_argument("--pymol-bin", default=os.environ.get("PYMOL_BIN"))
+    parser.add_argument("--plip-bin", default=os.environ.get("PLIP_BIN"))
     parser.add_argument("--cnn-scoring", choices=("none", "rescore", "refinement", "all"), default="rescore")
     parser.add_argument("--cnn", default="crossdock_default2018")
     parser.add_argument("--exhaustiveness", type=int, default=16)

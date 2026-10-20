@@ -22,7 +22,8 @@ def main() -> int:
     parser.add_argument("--json", action="store_true", help="Print machine-readable JSON.")
     args = parser.parse_args()
 
-    udp = Path(args.udp).expanduser()
+    resolved = shutil.which(os.path.expanduser(args.udp))
+    udp = Path(resolved or args.udp).expanduser()
     result = {
         "udp": str(udp),
         "exists": udp.exists(),

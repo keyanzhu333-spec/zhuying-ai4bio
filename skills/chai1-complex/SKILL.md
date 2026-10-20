@@ -16,11 +16,11 @@ Chai-1 predicts candidate structures from sequence and model features. It is not
 Prepare a multi-entity FASTA file. Use standard sequence alphabets:
 
 ```fasta
->protein_A
+>protein|protein_A
 MSEQUENCE...
->dna_B
+>dna|dna_B
 ACGTACGT...
->rna_C
+>rna|rna_C
 AUGCAUGC...
 ```
 
@@ -40,7 +40,9 @@ python3 scripts/run_chai1.py \
 ```
 
 Use `--dry-run` before expensive inference. Additional options supported by the
-installed Chai-1 CLI can be appended to the runner command.
+installed Chai-1 CLI can be appended after `--` in the runner command.
+The log is written beside the output directory because Chai-1 requires an empty
+output directory at startup.
 
 The equivalent direct command is:
 

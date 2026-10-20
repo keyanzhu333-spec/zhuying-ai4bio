@@ -16,7 +16,10 @@ from pathlib import Path
 def command_prefix(requested: str | None, conda_env: str) -> list[str]:
     value = requested or os.environ.get("HADDOCK3_BIN") or shutil.which("haddock3")
     if value:
-        return [str(Path(value).expanduser())]
+        resolved = shutil.which(os.path.expanduser(value))
+        if not resolved:
+            raise SystemExit("Configured HADDOCK3 executable is missing or not executable.")
+        return [str(Path(resolved).resolve())]
     conda = shutil.which("conda") or shutil.which("mamba") or shutil.which("micromamba")
     if conda:
         return [conda, "run", "-n", conda_env, "haddock3"]
@@ -48,6 +51,7 @@ def main() -> int:
     with log.open("w", encoding="utf-8") as handle:
         proc = subprocess.run(command, cwd=config.parent, stdout=handle, stderr=subprocess.STDOUT, check=False)
     record = args.record.expanduser() if args.record else config.with_suffix(config.suffix + ".run.json")
+    record.parent.mkdir(parents=True, exist_ok=True)
     record.write_text(json.dumps({
         "schema_version": 1,
         "created_utc": datetime.now(timezone.utc).isoformat(),

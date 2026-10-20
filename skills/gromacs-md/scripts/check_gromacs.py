@@ -14,8 +14,7 @@ from pathlib import Path
 def resolve_gmx(requested: str | None) -> str | None:
     value = requested or os.environ.get("GMX_BIN")
     if value:
-        path = Path(value).expanduser()
-        return str(path) if path.is_file() and os.access(path, os.X_OK) else None
+        return shutil.which(os.path.expanduser(value))
     return shutil.which("gmx") or shutil.which("gmx_mpi")
 
 
@@ -41,6 +40,7 @@ def main() -> int:
         report["error"] = "Set GMX_BIN or place gmx/gmx_mpi on PATH."
 
     if args.json:
+        args.json.expanduser().parent.mkdir(parents=True, exist_ok=True)
         args.json.expanduser().write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(report, indent=2))
     return 0 if executable and report.get("returncode") == 0 else 1

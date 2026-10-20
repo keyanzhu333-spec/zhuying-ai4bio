@@ -23,9 +23,16 @@ At the start of a docking task, locate the required executables and Python modul
 python scripts/install_gnina_runtime.py
 ```
 
-Use `--check` for a read-only check. The installer keeps PLIP, PyMOL, Open Babel, Meeko, RDKit, SciPy, Gemmi, and ProDy in local folders without modifying PATH or installing commercial PyMOL.
+Use `--check` for a read-only check of the active Python environment and GNINA
+executable. Installation creates the isolated Linux/WSL Conda environment
+`zy-gnina` using `assets/environment.yml`; activate it before invoking this skill.
 
-GNINA's official prebuilt release is a Linux executable. The installer pins the smaller v1.0.3 compatibility binary for WSL instead of assuming that the moving `latest/download/gnina` URL remains valid. On Windows the installer can download it for WSL, but WSL itself is not installed by this skill. Docker is an alternative; the user must provide Docker Desktop and, for GPU acceleration, a working NVIDIA/container runtime. A native `gnina.exe` or a newer GNINA binary may also be supplied explicitly with `--gnina-bin`. Installation still needs network access and permission to download packages.
+GNINA's official prebuilt release is a Linux executable usable in WSL.
+Obtain a platform-compatible binary from the official releases and pass
+`--gnina-bin` or set `GNINA_BIN`. The analysis installer does not install the
+GNINA engine or CUDA driver. Native Windows users should run installation in WSL2.
+Docker remains an optional pipeline backend when the user already has a working
+Docker runtime and the selected image.
 
 ### Remote Linux deployment
 

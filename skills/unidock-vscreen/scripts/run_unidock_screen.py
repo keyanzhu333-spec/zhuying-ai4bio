@@ -7,6 +7,7 @@ import argparse
 import json
 import math
 import os
+import shlex
 import shutil
 import subprocess
 import sys
@@ -72,11 +73,14 @@ def main() -> int:
     parser.add_argument("--force", action="store_true", help="Replace an existing output directory.")
     args = parser.parse_args()
 
-    udp = Path(args.udp).expanduser()
-    receptor = Path(args.receptor).expanduser()
-    out_dir = Path(args.out_dir).expanduser()
-    if not udp.is_file():
-        raise SystemExit(f"UniDock-Pro binary not found: {udp}")
+    resolved = shutil.which(os.path.expanduser(args.udp))
+    if not resolved:
+        raise SystemExit("UniDock-Pro binary missing or not executable; set --udp or UNIDOCK_PRO_BIN.")
+    udp = Path(resolved).resolve()
+    receptor = Path(args.receptor).expanduser().resolve()
+    out_dir = Path(args.out_dir).expanduser().resolve()
+    if not all(math.isfinite(value) for value in args.center + args.size) or any(value <= 0 for value in args.size):
+        parser.error("Box coordinates must be finite and sizes must be positive.")
     if not receptor.is_file():
         raise SystemExit(f"Receptor not found: {receptor}")
     if out_dir.exists() and any(out_dir.iterdir()) and not args.force:
@@ -169,7 +173,7 @@ def main() -> int:
             if args.energy_range is not None:
                 cmd.extend(["--energy_range", str(args.energy_range)])
 
-            commands.write(" ".join(cmd) + "\n")
+            commands.write(shlex.join(cmd) + "\n")
             if args.dry_run:
                 continue
             with combined_log.open("a", encoding="utf-8", errors="replace") as log_handle:
