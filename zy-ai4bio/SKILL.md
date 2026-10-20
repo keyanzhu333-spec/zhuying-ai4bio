@@ -1,6 +1,13 @@
 ---
 name: zy-ai4bio
+display_name: ZY-AI4Bio 生信科研工作流
+display_name_en: ZY-AI4Bio Biology Workflow Router
 description: AI-for-biology workflow router that coordinates Codex skills for docking, screening, complex prediction, molecular dynamics, antibody modeling, visualization, databases, and literature, plus Windows/WSL2 environment setup. Use for broad or multi-step structural biology and drug-discovery tasks, or when a Windows user needs the local scientific workflows prepared under WSL2.
+description_zh: 面向结构生物学与药物发现的 AI 工作流路由器，协调分子对接、虚拟筛选、复合物预测、分子动力学、抗体建模、可视化、数据库与文献检索等子技能，并支持 Windows/WSL2 环境搭建。适用于宽泛或多步骤的生信与药物发现任务。
+description_en: AI-for-biology workflow router coordinating molecular docking, virtual screening, complex prediction, molecular dynamics, antibody modeling, visualization, databases and literature skills, plus Windows/WSL2 setup. Use for broad or multi-step structural biology and drug-discovery tasks.
+category: 科研/生物
+version: 1.0.0
+author: 小猪莹(keyanzhu999)
 ---
 
 # ZY-AI4bio
