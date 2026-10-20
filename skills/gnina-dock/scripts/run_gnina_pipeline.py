@@ -166,10 +166,20 @@ cmd.show("cartoon", "complex_struct and polymer")
 cmd.show("sticks", "ligand_local")
 cmd.color("lightblue", "complex_struct and polymer")
 cmd.color("yellow", "ligand_local and elem C")
-cmd.set("cartoon_transparency", 0.8, "complex_struct and polymer")
+cmd.set("cartoon_transparency", __CARTOON_TRANS__, "complex_struct and polymer")
 cmd.set("stick_radius", 0.18)
 
 RESIDUES = __RESIDUES__  # e.g. ["LYS 745", "ASP 855"]
+if not RESIDUES:
+    # 自动从口袋 5A 内收集残基（整体图等无 PLIP 结果的场景）
+    seen = []
+    for atom in cmd.get_model("pocket_local and name CA and polymer").atom:
+        restype = atom.resn
+        resnr = atom.resi
+        key = (restype, resnr)
+        if key not in seen:
+            seen.append(key)
+    RESIDUES = ["%s %s" % (restype, resnr) for restype, resnr in seen]
 LEADER_RADIUS = 9.0
 MIN_ANGULAR_GAP = math.radians(40)
 
@@ -267,7 +277,7 @@ for resnr, angle in adjusted.items():
                     cgo.END]
 
 cmd.load_cgo(leaders, "callout_leaders")
-cmd.zoom("ligand_local", 7)
+__ZOOM_LINE__
 cmd.save("__SESSION__")
 cmd.ray(2400, 1800)
 cmd.png("__IMAGE__", dpi=300)
@@ -281,6 +291,8 @@ def build_callout_script(
     session: Path,
     residues: list[str],
     plip_session: Path | None = None,
+    cartoon_transparency: float = 0.8,
+    zoom: str = 'cmd.zoom("ligand_local", 7)',
 ) -> str:
     """Build the callout-style render script (PyMOL Python) for the pocket view.
 
@@ -306,6 +318,8 @@ def build_callout_script(
     script = script.replace("__SESSION__", session.resolve().as_posix())
     script = script.replace("__IMAGE__", image.resolve().as_posix())
     script = script.replace("__RESIDUES__", repr(label_texts))
+    script = script.replace("__CARTOON_TRANS__", str(cartoon_transparency))
+    script = script.replace("__ZOOM_LINE__", zoom)
     return script
 
 
@@ -478,41 +492,169 @@ def make_pymol_script(
     image: Path,
     state: int,
 ) -> str:
-    return f"""load {receptor_pdb.resolve().as_posix()}, receptor
-load {poses_sdf.resolve().as_posix()}, ligand_poses
-create complex_pose{state}, receptor or ligand_poses, {state}, 1
-bg_color white
-set ray_trace_mode, 1
-set ray_trace_fog, 0
-set depth_cue, 0
-set antialias, 2
-set line_smooth, 1
-set hash_max, 300
-set ray_opaque_background, 1
-set light_count, 8
-set specular, 0.3
-set shininess, 50
-set ambient, 0.7
-set direct, 0.4
-set reflect, 0.1
-set surface_quality, 1
-set cartoon_oval_length, 1.2
-set cartoon_oval_width, 0.4
-set cartoon_rect_length, 1.2
-set cartoon_rect_width, 0.5
-set cartoon_loop_radius, 0.7
-show cartoon, receptor
-show sticks, ligand_poses
-color lightblue, receptor
-color yellow, ligand_poses
-set cartoon_transparency, 0.0, receptor
-orient complex_pose{state}
-zoom complex_pose{state}, 3
-save {complex_pdb.resolve().as_posix()}, complex_pose{state}
-save {session.resolve().as_posix()}
-ray 2400, 1800
-png {image.resolve().as_posix()}, width=2400, height=1800, dpi=300, ray=1
-quit
+    """Build the overview render script (callout style, full protein + top pose).
+
+    The whole protein is shown as an opaque lightblue cartoon, the docked
+    ligand as yellow sticks, and pocket residues (within 5 A of the ligand)
+    are labelled with collision-avoiding callout leader lines. Returns the
+    final merged complex PDB path is written during rendering.
+    """
+    return f"""import math
+import pymol
+from pymol import cmd, cgo
+
+cmd.load("{receptor_pdb.resolve().as_posix()}", "receptor")
+cmd.load("{poses_sdf.resolve().as_posix()}", "ligand_poses")
+cmd.create("complex_struct", "receptor or ligand_poses", {state}, 1)
+
+cmd.bg_color("white")
+cmd.set("ray_opaque_background", 1)
+cmd.set("ray_trace_mode", 1)
+cmd.set("ray_trace_fog", 0)
+cmd.set("depth_cue", 0)
+cmd.set("antialias", 2)
+cmd.set("line_smooth", 1)
+cmd.set("hash_max", 300)
+cmd.set("light_count", 8)
+cmd.set("specular", 0.3)
+cmd.set("shininess", 50)
+cmd.set("ambient", 0.7)
+cmd.set("direct", 0.4)
+cmd.set("reflect", 0.1)
+cmd.set("surface_quality", 1)
+cmd.set("cartoon_oval_length", 1.2)
+cmd.set("cartoon_oval_width", 0.4)
+cmd.set("cartoon_rect_length", 1.2)
+cmd.set("cartoon_rect_width", 0.5)
+cmd.set("cartoon_loop_radius", 0.7)
+
+cmd.hide("everything", "complex_struct")
+cmd.select("ligand_local", "complex_struct and organic and not polymer and not solvent")
+cmd.select("pocket_local", "byres ((complex_struct and polymer) within 5.0 of ligand_local)")
+cmd.show("cartoon", "complex_struct and polymer")
+cmd.show("sticks", "ligand_local")
+cmd.color("lightblue", "complex_struct and polymer")
+cmd.color("yellow", "ligand_local and elem C")
+cmd.set("cartoon_transparency", 0.0, "complex_struct and polymer")
+cmd.set("stick_radius", 0.18)
+
+# 口袋残基整体 stick + 元素着色（碳橙 / N 蓝 / O 红 / S 黄）
+cmd.select("contact_residues", "pocket_local")
+cmd.show("sticks", "contact_residues")
+cmd.color("orange", "contact_residues and elem C")
+cmd.color("blue", "contact_residues and elem N")
+cmd.color("red", "contact_residues and elem O")
+cmd.color("yellow", "contact_residues and elem S")
+
+# callout 防碰撞标注：标注「任意原子距配体 4.5A 内」的接触残基（上限 10 个，按距离排序）
+RESIDUES = []
+_lig = cmd.get_model("ligand_local").atom
+lig_coords = [a.coord for a in _lig]
+_ca_by_resi = {{}}
+for _a in cmd.get_model("byres (complex_struct and polymer within 4.5 of ligand_local) and name CA").atom:
+    _ca_by_resi[_a.resi] = (_a.resn, _a.coord)
+_dist = []
+for resi, (resn, ca) in _ca_by_resi.items():
+    dmin = min(math.sqrt(sum((ca[k] - lc[k]) ** 2 for k in range(3))) for lc in lig_coords)
+    _dist.append((dmin, resn, resi))
+_dist.sort()
+_dedup = set()
+for dmin, resn, resi in _dist:
+    if resi not in _dedup:
+        _dedup.add(resi)
+        RESIDUES.append("%s %s" % (resn, resi))
+    if len(RESIDUES) >= 10:
+        break
+LEADER_RADIUS = 16.0
+MIN_ANGULAR_GAP = math.radians(40)
+
+cmd.orient("ligand_local")
+lig_atoms = cmd.get_model("ligand_local").atom
+center = [sum(a.coord[i] for a in lig_atoms) / len(lig_atoms) for i in range(3)]
+
+view = cmd.get_view()
+rot = [[view[0], view[1], view[2]], [view[3], view[4], view[5]], [view[6], view[7], view[8]]]
+tr = [view[12], view[13], view[14]]
+
+
+def to_cam(p):
+    return [sum(rot[i][j] * p[j] for j in range(3)) + tr[i] for i in range(3)]
+
+
+def to_model(p):
+    d = [p[i] - tr[i] for i in range(3)]
+    return [sum(rot[j][i] * d[j] for j in range(3)) for i in range(3)]
+
+
+center_cam = to_cam(center)
+angles = {{}}
+ca_model = {{}}
+restype_of = {{}}
+for label_text in RESIDUES:
+    restype, resnr = label_text.rsplit(" ", 1)
+    restype_of[resnr] = restype
+    atoms = cmd.get_model("resi %s and name CA and polymer" % resnr).atom
+    if not atoms:
+        continue
+    ca = atoms[0].coord
+    ca_model[resnr] = ca
+    ca_cam = to_cam(ca)
+    angles[resnr] = math.atan2(ca_cam[1] - center_cam[1], ca_cam[0] - center_cam[0])
+
+ordered = sorted(angles, key=lambda r: angles[r])
+adjusted = {{}}
+previous = None
+for resnr in ordered:
+    angle = angles[resnr]
+    if previous is not None:
+        while angle - previous < MIN_ANGULAR_GAP:
+            angle += MIN_ANGULAR_GAP - (angle - previous)
+    adjusted[resnr] = angle
+    previous = angle
+
+cmd.set("label_font_id", 7)
+cmd.set("label_size", 16)
+cmd.set("label_color", "black")
+cmd.set("label_shadow_mode", 1)
+
+# 蛋白最前方深度 + 10A：标签统一放在蛋白前面，防止遮挡且不越过相机裁剪面
+_z_front = max(to_cam(a.coord)[2] for a in cmd.get_model("complex_struct and name CA").atom)
+LABEL_Z = _z_front + 10.0
+
+leaders = []
+for resnr, angle in adjusted.items():
+    ca = ca_model[resnr]
+    ca_cam = to_cam(ca)
+    label_cam = [
+        center_cam[0] + math.cos(angle) * LEADER_RADIUS,
+        center_cam[1] + math.sin(angle) * LEADER_RADIUS,
+        LABEL_Z,
+    ]
+    label_pos = to_model(label_cam)
+    pseudo = "callout_%s" % resnr
+    cmd.pseudoatom(pseudo, pos=label_pos, label="%s %s" % (restype_of[resnr], resnr))
+    segments = 6
+    for i in range(segments):
+        t0 = 0.20 + 0.65 * (i / segments)
+        t1 = 0.20 + 0.65 * ((i + 0.5) / segments)
+        ax = ca[0] + (label_pos[0] - ca[0]) * t0
+        ay = ca[1] + (label_pos[1] - ca[1]) * t0
+        az = ca[2] + (label_pos[2] - ca[2]) * t0
+        bx = ca[0] + (label_pos[0] - ca[0]) * t1
+        by = ca[1] + (label_pos[1] - ca[1]) * t1
+        bz = ca[2] + (label_pos[2] - ca[2]) * t1
+        leaders += [cgo.BEGIN, cgo.LINES, cgo.LINEWIDTH, 2.0,
+                    cgo.COLOR, 0.40, 0.40, 0.40,
+                    cgo.VERTEX, ax, ay, az, cgo.VERTEX, bx, by, bz,
+                    cgo.END]
+
+cmd.load_cgo(leaders, "callout_leaders")
+cmd.zoom("complex_struct", 2)
+cmd.save("{complex_pdb.resolve().as_posix()}", "complex_struct")
+cmd.save("{session.resolve().as_posix()}")
+cmd.ray(2400, 1800)
+cmd.png("{image.resolve().as_posix()}", dpi=300)
+cmd.quit()
 """
 
 
@@ -829,7 +971,7 @@ def main() -> int:
         if not receptor_pdb:
             raise ValueError("--run-pymol requires a PDB receptor or --receptor-pdb")
         complex_pdb = args.out_dir / f"complex_pose{args.pose_state}.pdb"
-        pml = args.out_dir / "build_complex.pml"
+        pml = args.out_dir / "build_complex.py"
         pml.write_text(
             make_pymol_script(
                 receptor_pdb, docked_sdf, complex_pdb,

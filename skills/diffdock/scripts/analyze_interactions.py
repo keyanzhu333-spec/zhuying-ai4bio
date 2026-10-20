@@ -182,8 +182,9 @@ def run_pymol_visualization(complex_pdb, out_dir):
         shutil.copy2(complex_pdb, complex_in_outdir)
 
     pymol_script = f"""
+import math
 import pymol
-from pymol import cmd
+from pymol import cmd, cgo
 
 # Load PLIP session (contains interaction visualizations) and complex
 cmd.load({pse_basename!r})
@@ -191,6 +192,7 @@ cmd.load({complex_basename!r}, 'complex_struct')
 
 # ===== 1. Background and overall style =====
 cmd.bg_color('white')
+cmd.set('ray_opaque_background', 1)
 cmd.set('ray_trace_mode', 1)
 cmd.set('ray_trace_fog', 0)
 cmd.set('depth_cue', 0)
@@ -217,30 +219,38 @@ cmd.set('cartoon_loop_radius', 0.7)
 cmd.set('cartoon_transparency', 0.8)
 cmd.set('surface_quality', 1)
 
-# ===== 5. Label key interacting residues =====
+# ===== 5. Base structure: cartoon + ligand sticks =====
+cmd.hide('everything', 'complex_struct')
+cmd.select('ligand_local', 'complex_struct and organic and not polymer and not solvent')
+cmd.show('cartoon', 'complex_struct and polymer')
+cmd.show('sticks', 'ligand_local')
+cmd.color('lightblue', 'complex_struct and polymer')
+cmd.color('yellow', 'ligand_local and elem C')
+cmd.set('cartoon_transparency', 0.8, 'complex_struct and polymer')
+cmd.set('stick_radius', 0.18)
+
+# ===== 6. Callout labels (collision-avoiding) + element-coloured contact residues =====
 cmd.set('label_font_id', 7)
-cmd.set('label_size', 18)
+cmd.set('label_size', 16)
 cmd.set('label_color', 'black')
 cmd.set('label_shadow_mode', 1)
 
 {label_commands}
 
-# ===== 6. IMAGE 1: binding-site close-up (cartoon transparency 0.8, with labels) =====
+# ===== 7. IMAGE 1: binding-site close-up =====
 cmd.set('cartoon_transparency', 0.8)
-cmd.zoom('resn UNL', buffer=8)
+cmd.zoom('ligand_local', 7)
 cmd.ray(2400, 1800)
 cmd.png('interaction_bindingsite.png', dpi=300)
 
-# ===== 7. IMAGE 2: overall view — full protein cartoon (transparency 0) + ligand =====
-# Hide residue labels for the clean overview
+# ===== 8. IMAGE 2: overall view — full protein cartoon + ligand =====
 cmd.label('all', '""')
-# Solid cartoon for the whole protein
-cmd.set('cartoon_transparency', 0.0)
-# Make sure the whole protein is shown as cartoon and ligand as sticks
+cmd.delete('callout_leaders')
+cmd.delete('callout_*')
+cmd.set('cartoon_transparency', 0.0, 'complex_struct and polymer')
 cmd.show('cartoon', 'complex_struct')
 cmd.show('sticks', 'resn UNL')
 cmd.color('cyan', 'resn UNL and elem C')
-# Zoom out to show the entire complex
 cmd.orient()
 cmd.zoom('all', buffer=3)
 cmd.ray(2400, 1800)
@@ -335,26 +345,110 @@ def _parse_interacting_residues(out_dir):
 
 def _build_label_commands(residues):
     """
-    Build PyMOL commands to label each interacting residue's CA atom
-    with 'RESTYPE RESNR' (e.g. 'LEU 718').
+    Build the callout-style label block (PyMOL Python).
+
+    Labels orbit the ligand in the view plane with dashed leader lines back to
+    each interacting residue's CA, so labels never overlap the pocket sticks.
+    Contact residues are shown as element-coloured sticks (orange carbon).
     """
     if not residues:
         return "# No interacting residues found to label"
 
-    lines = []
+    residue_list = []
     for res in residues:
-        # Split into restype and resnr (e.g. 'LEU718' -> 'LEU', '718')
         i = 0
         while i < len(res) and res[i].isalpha():
             i += 1
-        restype = res[:i]
-        resnr = res[i:]
-        if not resnr:
-            continue
-        sel_name = f"res_{restype}{resnr}"
-        lines.append(f"cmd.select('{sel_name}', 'resi {resnr} and name CA and chain A')")
-        lines.append(f"cmd.label('{sel_name}', '\"{restype} {resnr}\"')")
-    return "\n".join(lines)
+        restype, resnr = res[:i], res[i:]
+        if resnr:
+            residue_list.append(f"{restype} {resnr}")
+
+    res_repr = repr(residue_list)
+    return f'''RESIDUES = {res_repr}
+LEADER_RADIUS = 9.0
+MIN_ANGULAR_GAP = math.radians(40)
+
+# 接触残基整体 stick + 元素着色（碳橙 / N 蓝 / O 红 / S 黄）
+_contact_nums = [r.rsplit(" ", 1)[1] for r in RESIDUES if r.rsplit(" ", 1)[1].isdigit()]
+if _contact_nums:
+    _contact_sel = "complex_struct and polymer and (resi " + " or resi ".join(_contact_nums) + ")"
+    cmd.select("contact_residues", _contact_sel)
+    cmd.show("sticks", "contact_residues")
+    cmd.color("orange", "contact_residues and elem C")
+    cmd.color("blue", "contact_residues and elem N")
+    cmd.color("red", "contact_residues and elem O")
+    cmd.color("yellow", "contact_residues and elem S")
+    cmd.set("cartoon_transparency", 0.5, "contact_residues")
+
+cmd.orient("ligand_local")
+_lig_atoms = cmd.get_model("ligand_local").atom
+center = [sum(a.coord[i] for a in _lig_atoms) / len(_lig_atoms) for i in range(3)]
+
+view = cmd.get_view()
+rot = [[view[0], view[1], view[2]], [view[3], view[4], view[5]], [view[6], view[7], view[8]]]
+tr = [view[12], view[13], view[14]]
+
+def _to_cam(p):
+    return [sum(rot[i][j] * p[j] for j in range(3)) + tr[i] for i in range(3)]
+
+def _to_model(p):
+    d = [p[i] - tr[i] for i in range(3)]
+    return [sum(rot[j][i] * d[j] for j in range(3)) for i in range(3)]
+
+center_cam = _to_cam(center)
+angles = {{}}
+ca_model = {{}}
+restype_of = {{}}
+for label_text in RESIDUES:
+    restype, resnr = label_text.rsplit(" ", 1)
+    restype_of[resnr] = restype
+    atoms = cmd.get_model("resi %s and name CA and polymer" % resnr).atom
+    if not atoms:
+        continue
+    ca = atoms[0].coord
+    ca_model[resnr] = ca
+    ca_cam = _to_cam(ca)
+    angles[resnr] = math.atan2(ca_cam[1] - center_cam[1], ca_cam[0] - center_cam[0])
+
+ordered = sorted(angles, key=lambda r: angles[r])
+adjusted = {{}}
+previous = None
+for resnr in ordered:
+    angle = angles[resnr]
+    if previous is not None:
+        while angle - previous < MIN_ANGULAR_GAP:
+            angle += MIN_ANGULAR_GAP - (angle - previous)
+    adjusted[resnr] = angle
+    previous = angle
+
+_leaders = []
+for resnr, angle in adjusted.items():
+    ca = ca_model[resnr]
+    ca_cam = _to_cam(ca)
+    label_cam = [
+        center_cam[0] + math.cos(angle) * LEADER_RADIUS,
+        center_cam[1] + math.sin(angle) * LEADER_RADIUS,
+        ca_cam[2],
+    ]
+    label_pos = _to_model(label_cam)
+    pseudo = "callout_%s" % resnr
+    cmd.pseudoatom(pseudo, pos=label_pos, label="%s %s" % (restype_of[resnr], resnr))
+    segments = 6
+    for i in range(segments):
+        t0 = 0.20 + 0.65 * (i / segments)
+        t1 = 0.20 + 0.65 * ((i + 0.5) / segments)
+        ax = ca[0] + (label_pos[0] - ca[0]) * t0
+        ay = ca[1] + (label_pos[1] - ca[1]) * t0
+        az = ca[2] + (label_pos[2] - ca[2]) * t0
+        bx = ca[0] + (label_pos[0] - ca[0]) * t1
+        by = ca[1] + (label_pos[1] - ca[1]) * t1
+        bz = ca[2] + (label_pos[2] - ca[2]) * t1
+        _leaders += [cgo.BEGIN, cgo.LINES, cgo.LINEWIDTH, 2.0,
+                     cgo.COLOR, 0.40, 0.40, 0.40,
+                     cgo.VERTEX, ax, ay, az, cgo.VERTEX, bx, by, bz,
+                     cgo.END]
+
+cmd.load_cgo(_leaders, "callout_leaders")'''
 
 
 def main():
