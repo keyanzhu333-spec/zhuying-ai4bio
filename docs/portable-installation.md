@@ -29,7 +29,25 @@ python3 scripts/install_skills.py --dry-run
 python3 scripts/install_skills.py
 ```
 
-The installer does not overwrite an existing skill. To test without touching Codex, pass `--target /tmp/zy-ai4bio-skills`.
+By default the installer leaves existing skills untouched. Update an existing
+installation from the repository root with:
+
+```bash
+git pull --ff-only
+python3 scripts/install_skills.py --update --dry-run
+python3 scripts/install_skills.py --update
+```
+
+`--update` stages the new skill files first, backs up old skill directories
+beside the active skills directory under `skill-backups/`, and preserves local
+runtime folders, virtual environments, weights, credentials, and private
+configuration. Each installed skill records its source commit in
+`.zy-ai4bio-install.json`. Installation failure rolls back the replacements.
+Local edits to skill instructions/scripts remain in the backup; review those
+edits before merging them into an updated skill. Use the updated skills on your
+next Codex turn. Pass `--backup-dir` to choose a different backup parent.
+
+To test without touching Codex, pass `--target /tmp/zy-ai4bio-skills`.
 Selecting PPI screening includes LightDock; selecting reverse screening includes
 UniDock screening, unless that dependency is already installed. Optional
 follow-up tools remain separate. The installed `zy-ai4bio` includes its environment

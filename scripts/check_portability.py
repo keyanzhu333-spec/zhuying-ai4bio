@@ -25,6 +25,8 @@ def scan_text(text):
             if pattern.search(line):
                 yield number, label
         for match in IPV4.finditer(line):
+            if re.search(r"\b[A-Za-z][\w.-]*(?:==|~=|>=|<=)\s*$", line[:match.start()]):
+                continue
             try:
                 address = ipaddress.ip_address(match.group())
             except ValueError:
