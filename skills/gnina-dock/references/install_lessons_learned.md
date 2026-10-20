@@ -161,7 +161,7 @@ set label_shadow_mode, 1
 
 两张标准输出图：
 - `interaction_bindingsite.png` — 结合位点特写（cartoon 透明 0.8 + 残基标签 + PLIP 会话虚线）
-- `complex_overview.png` — 整体图（cartoon 不透明、配体高亮；不显示标签、编号、图例或引线，保存的 PyMOL 会话同样不带这些标注）
+- `complex_overview.png` — 整体图（仅蛋白不透明 cartoon + 配体 sticks；不显示口袋残基 sticks、高亮、标签、编号、图例或引线，保存的 PyMOL 会话采用同样样式）
 
 ## 七、一键复现命令速查
 

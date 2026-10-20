@@ -243,16 +243,23 @@ cmd.zoom('ligand_local', 7)
 cmd.ray(2400, 1800)
 cmd.png('interaction_bindingsite.png', dpi=300)
 
-# ===== 8. IMAGE 2: overall view — full protein cartoon + ligand =====
-cmd.label('all', '""')
-cmd.delete('callout_leaders')
-cmd.delete('callout_*')
+# Save the annotated local view before clearing inherited PLIP objects.
+cmd.save('interaction_bindingsite.pse')
+
+# Overview: start fresh so PLIP sticks, labels and distances cannot leak in.
+cmd.delete('all')
+cmd.load({complex_basename!r}, 'complex_struct')
+cmd.hide('everything', 'all')
+cmd.select('ligand_local', 'complex_struct and organic and not polymer and not solvent')
+cmd.show('cartoon', 'complex_struct and polymer')
+cmd.show('sticks', 'ligand_local')
+cmd.color('lightblue', 'complex_struct and polymer')
+cmd.color('yellow', 'ligand_local and elem C')
 cmd.set('cartoon_transparency', 0.0, 'complex_struct and polymer')
-cmd.show('cartoon', 'complex_struct')
-cmd.show('sticks', 'resn UNL')
-cmd.color('cyan', 'resn UNL and elem C')
-cmd.orient()
-cmd.zoom('all', buffer=3)
+cmd.hide('labels', 'all')
+cmd.orient('complex_struct')
+cmd.zoom('complex_struct', buffer=3)
+cmd.save('complex_overview.pse')
 cmd.ray(2400, 1800)
 cmd.png('complex_overview.png', dpi=300)
 

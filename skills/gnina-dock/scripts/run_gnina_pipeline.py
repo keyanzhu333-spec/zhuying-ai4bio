@@ -494,7 +494,8 @@ def make_pymol_script(
 ) -> str:
     """Render the full complex without labels, indices, legends, or leader lines.
 
-    Keep residue annotations in the separate local-pocket interaction view.
+    Show only protein cartoon and ligand sticks. Pocket-residue sticks and
+    annotations belong in the separate local-pocket interaction view.
     """
     return f"""import pymol
 from pymol import cmd
@@ -526,21 +527,12 @@ cmd.set("cartoon_loop_radius", 0.7)
 
 cmd.hide("everything", "complex_struct")
 cmd.select("ligand_local", "complex_struct and organic and not polymer and not solvent")
-cmd.select("pocket_local", "byres ((complex_struct and polymer) within 5.0 of ligand_local)")
 cmd.show("cartoon", "complex_struct and polymer")
 cmd.show("sticks", "ligand_local")
 cmd.color("lightblue", "complex_struct and polymer")
 cmd.color("yellow", "ligand_local and elem C")
 cmd.set("cartoon_transparency", 0.0, "complex_struct and polymer")
 cmd.set("stick_radius", 0.18)
-
-# 口袋残基整体 stick + 元素着色（碳橙 / N 蓝 / O 红 / S 黄）
-cmd.select("contact_residues", "pocket_local")
-cmd.show("sticks", "contact_residues")
-cmd.color("orange", "contact_residues and elem C")
-cmd.color("blue", "contact_residues and elem N")
-cmd.color("red", "contact_residues and elem O")
-cmd.color("yellow", "contact_residues and elem S")
 
 cmd.hide("labels", "all")
 cmd.orient("ligand_local")

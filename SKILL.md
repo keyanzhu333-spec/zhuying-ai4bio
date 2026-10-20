@@ -222,18 +222,21 @@ python scripts/analyze_interactions.py --protein protein.pdb \
 1. **清理受体 + 合并复合物**——先去除受体 PDB 中原有的所有杂原子（HETATM：结晶添加剂、共结晶配体、水、离子），只保留纯蛋白；再把配体 SDF 转为 HETATM（残基名 UNL、链 Z）合并进来，得到 `complex.pdb`。合并用 openbabel 自动完成。
 2. **PLIP 分析**——运行 `plip -f complex.pdb -ypxt`，输出 XML、文本报告、PyMOL 会话 `.pse`。
 3. **PyMOL 绘图（两张 300 DPI 图）**——加载 PLIP 的 `.pse` 和复合物，光追渲染：
-   - `complex_overview.png` —— 整体图（不透明 cartoon，看配体在蛋白全貌中的位置）
+   - `complex_overview.png` —— 整体图（仅蛋白不透明 cartoon + 小分子 sticks；不显示口袋残基 sticks、残基高亮、标签、编号、图例或引线）
    - `interaction_bindingsite.png` —— 结合位点特写（半透明 cartoon + 相互作用线 + 关键残基标签）
 4. **清理中间文件**——删除 PLIP 自带小图和中间产物。
 5. **自动生成 SCI 级报告**——见"工作流 5"，输出到并列的 `report/` 文件夹。
 
 > **为什么要清理受体：** 实验解析的 PDB 结构常带有结晶缓冲剂、共结晶配体、水和离子。若不清理，PLIP 会把它们也当作配体逐个分析。清理后只保留纯蛋白 + 我们对接的配体（UNL:Z）。
 
+整体图从干净的复合物对象生成，不继承 PLIP 残基 sticks 或标注；`complex_overview.pse` 保存同样样式。局部互作图及 `interaction_bindingsite.pse` 保留相互作用线和残基标签。
+
 **输出文件（interactions/ 文件夹）：**
 - `complex.pdb` —— 合并的纯蛋白-配体复合物
 - `complex_report.txt` —— 文本相互作用报告（氢键/疏水/盐桥/卤键，含残基和距离）
 - `complex_report.xml` —— 结构化 XML
-- `*.pse` —— PyMOL 会话
+- `interaction_bindingsite.pse` —— 局部互作会话（含标注）
+- `complex_overview.pse` —— 整体会话（仅蛋白 cartoon + 小分子 sticks，无标注）
 - `complex_overview.png` —— 整体图（300 DPI）
 - `interaction_bindingsite.png` —— 结合位点特写图（300 DPI，含残基标签）
 

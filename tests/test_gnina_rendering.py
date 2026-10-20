@@ -30,7 +30,8 @@ class OverviewTests(unittest.TestCase):
         cmd.hide.assert_any_call("labels", "all")
         cmd.show.assert_any_call("cartoon", "complex_struct and polymer")
         cmd.show.assert_any_call("sticks", "ligand_local")
-        cmd.show.assert_any_call("sticks", "contact_residues")
+        self.assertEqual([args for args, _ in cmd.show.call_args_list], [
+            ("cartoon", "complex_struct and polymer"), ("sticks", "ligand_local")])
         cmd.ray.assert_called_once_with(2400, 1800)
         cmd.save.assert_any_call(Path("overview.pse").resolve().as_posix())
 
