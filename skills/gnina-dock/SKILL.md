@@ -1,6 +1,13 @@
 ---
 name: gnina-dock
+display_name: GNINA 分子对接与相互作用分析
+display_name_en: GNINA Docking with PyMOL and PLIP
 description: Run structure-based molecular docking with GNINA, inspect poses in PyMOL, and generate and interpret PLIP protein-ligand interaction reports. Use when a user asks to dock a prepared receptor/ligand pair, use GNINA CNN rescoring, compare docking poses, visualize a docking complex, or summarize hydrogen bonds, hydrophobic contacts, aromatic interactions, salt bridges, halogen bonds, metal contacts, or water bridges.
+description_zh: 用 GNINA 做基于结构的分子对接，用 PyMOL 可视化位姿，用 PLIP 生成并解读蛋白-配体相互作用报告。适用于受体/配体对接、CNN 重打分、位姿比较与氢键/疏水/盐桥等相互作用总结。
+description_en: Run structure-based molecular docking with GNINA, inspect poses in PyMOL, and generate and interpret PLIP protein-ligand interaction reports. Use for receptor/ligand docking, CNN rescoring, pose comparison, and summarizing hydrogen bonds, hydrophobic contacts, salt bridges, and more.
+category: 科研/生物
+version: 1.0.0
+author: 小猪莹(keyanzhu999)
 ---
 
 # GNINA-PyMOL-PLIP Docking

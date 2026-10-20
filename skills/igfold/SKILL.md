@@ -1,6 +1,13 @@
 ---
 name: igfold
+display_name: IgFold 抗体结构预测
+display_name_en: IgFold Antibody Modeling
 description: Predict an antibody Fab structure from VH and VL amino-acid sequences with an existing local IgFold installation. Use for antibody variable-domain modeling and PDB output; requires IgFold and its model checkpoints separately.
+description_zh: 从 VH 与 VL 氨基酸序列预测抗体 Fab 结构，输出 PDB。适用于抗体可变区建模；需另行安装 IgFold 及其模型权重。
+description_en: Predict an antibody Fab structure from VH and VL amino-acid sequences with an existing local IgFold installation, producing PDB output. Requires IgFold and its model checkpoints separately.
+category: 科研/生物
+version: 1.0.0
+author: 小猪莹(keyanzhu999)
 ---
 
 # IgFold Antibody Modeling

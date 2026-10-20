@@ -1,6 +1,13 @@
 ---
 name: literature-skill
+display_name: 文献 RSS 跟踪
+display_name_en: Literature RSS Monitoring
 description: Monitor one or more RSS/Atom feeds for recent research papers and summarize topic-specific progress. Use when the user provides RSS feed URLs, journal feeds, DOI feeds, arXiv feeds, or asks for recurring/daily research updates filtered by a theme such as biocatalysis, enzymes, catalysis, batteries, polymers, or any custom research topic.
+description_zh: 监控一个或多个 RSS/Atom 文献源，按主题（如生物催化、酶、催化、电池、聚合物等）汇总最新研究进展。适用于文献订阅、期刊/DOI/arXiv 源跟踪与每日研究快报。
+description_en: Monitor one or more RSS/Atom feeds for recent research papers and summarize topic-specific progress. Use for journal, DOI, or arXiv feed tracking and recurring daily research updates filtered by a custom theme.
+category: 科研/生物
+version: 1.0.0
+author: 小猪莹(keyanzhu999)
 ---
 
 # Literature Skill

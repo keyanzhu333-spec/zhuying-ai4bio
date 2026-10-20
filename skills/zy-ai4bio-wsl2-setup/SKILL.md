@@ -1,6 +1,13 @@
 ---
 name: zy-ai4bio-wsl2-setup
+display_name: ZY-AI4Bio Windows/WSL2 环境搭建
+display_name_en: ZY-AI4Bio Windows/WSL2 Setup
 description: Detect Windows, Linux, or WSL2; reuse an existing WSL2 distribution or provision Ubuntu WSL2 when needed; then prepare a Linux Codex environment for ZY-AI4Bio skills. Use when a Windows user wants to install or run the local scientific workflows and asks for OS detection, WSL2 setup, or environment migration.
+description_zh: 检测 Windows、Linux 或 WSL2 环境，复用已有 WSL2 发行版或按需安装 Ubuntu WSL2，并为 ZY-AI4Bio 技能准备 Linux Codex 环境。适用于系统检测、WSL2 搭建与环境迁移。
+description_en: Detect Windows, Linux, or WSL2; reuse an existing WSL2 distribution or provision Ubuntu WSL2 when needed; then prepare a Linux Codex environment for ZY-AI4Bio skills.
+category: 科研/生物
+version: 1.0.0
+author: 小猪莹(keyanzhu999)
 ---
 
 # ZY-AI4Bio Windows / WSL2 Setup

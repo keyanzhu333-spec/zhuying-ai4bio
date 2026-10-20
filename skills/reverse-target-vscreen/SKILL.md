@@ -1,6 +1,13 @@
 ---
 name: reverse-target-vscreen
+display_name: 反向靶点虚拟筛选
+display_name_en: Reverse Target Virtual Screening
 description: Screen one small molecule against a panel of protein targets using Open Babel ligand preparation, local UniDock-Pro reverse docking, GNINA CNN rescoring of the top 5-10%, DiffDock blind-docking checks for uncertain pockets, Chai-1 validation of a very small final set, and PLIP or the molecular structure viewer for interaction analysis. Use for reverse virtual screening, target fishing, off-target prediction, drug repurposing, polypharmacology, or ranking possible protein targets for a supplied SMILES, SDF, MOL2, PDB, or PDBQT compound.
+description_zh: 用 Open Babel、UniDock-Pro、GNINA、DiffDock、Chai-1 等对一个化合物在多个蛋白靶点上做反向虚拟筛选，用于靶点钓鱼、脱靶预测、药物重定位与多药理学分析。
+description_en: Screen one small molecule against a panel of protein targets using Open Babel, UniDock-Pro, GNINA CNN rescoring, DiffDock, Chai-1, and PLIP. Use for reverse virtual screening, target fishing, off-target prediction, and drug repurposing.
+category: 科研/生物
+version: 1.0.0
+author: 小猪莹(keyanzhu999)
 ---
 
 # Reverse Target Virtual Screening

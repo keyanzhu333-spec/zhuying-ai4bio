@@ -1,6 +1,13 @@
 ---
 name: gromacs-md
+display_name: GROMACS 多场景分子动力学
+display_name_en: GROMACS Multi-Scenario Molecular Dynamics
 description: Prepare, run, troubleshoot, analyze, and plot GROMACS molecular dynamics for single proteins, protein-protein complexes, protein-DNA/RNA complexes, protein-small-molecule complexes, and protein-metal systems. Use when Codex needs to choose a scientifically appropriate MD setup, generate ligand or metal-aware parameters, run minimization/equilibration/production, analyze trajectories, make publication-ready plots, or perform carefully validated MM/PBSA calculations.
+description_zh: 为单蛋白、蛋白-蛋白、蛋白-核酸、蛋白-小分子、蛋白-金属等体系准备、运行、排错、分析并绘制 GROMACS 分子动力学，含配体/金属参数化、轨迹分析与发表级绘图，及经过验证的 MM/PBSA 计算。
+description_en: Prepare, run, troubleshoot, analyze, and plot GROMACS molecular dynamics for single proteins and protein-protein, protein-nucleic-acid, protein-small-molecule, and protein-metal systems, including trajectory analysis, publication-ready plots, and validated MM/PBSA.
+category: 科研/生物
+version: 1.0.0
+author: 小猪莹(keyanzhu999)
 ---
 
 # GROMACS Multi-Scenario MD

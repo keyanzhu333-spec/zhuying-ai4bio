@@ -1,8 +1,13 @@
 ---
 name: ppi-vscreen
+display_name: 蛋白-蛋白互作虚拟筛选
+display_name_en: Protein-Protein Interaction Virtual Screening
 description: Run hierarchical virtual screening of candidate protein interaction partners against a target protein using local LightDock structure-based docking, Chai-1 sequence-based complex prediction, optional HADDOCK3 restraint-guided refinement, structure inspection, and downstream MD. Use when the user has one target protein plus a protein library and wants to rank possible protein-protein interaction partners, receptors, binders, or decoys.
-metadata:
-  short-description: Hierarchical protein-protein interaction screening
+description_zh: 对一个靶点蛋白做候选互作伴侣的分层虚拟筛选，组合本地 LightDock 对接、Chai-1 序列预测、可选 HADDOCK3 精修与结构检查，用于排序可能的蛋白互作伴侣、受体或诱饵。
+description_en: Run hierarchical virtual screening of candidate protein interaction partners against a target protein using local LightDock docking, Chai-1 sequence-based prediction, optional HADDOCK3 refinement, and structure inspection.
+category: 科研/生物
+version: 1.0.0
+author: 小猪莹(keyanzhu999)
 ---
 
 # Protein-Protein Interaction Virtual Screening

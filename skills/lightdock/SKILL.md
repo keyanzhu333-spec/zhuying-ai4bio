@@ -1,8 +1,13 @@
 ---
 name: lightdock
+display_name: LightDock 蛋白与核酸对接
+display_name_en: LightDock Protein and Nucleic-Acid Docking
 description: Run local LightDock protein-protein and protein-nucleic-acid docking workflows from receptor.pdb and ligand.pdb files, including blind docking, fastdfire scoring, swarm simulation, ranking, top complex extraction, and result summarization. Use when the user asks for LightDock, protein-protein docking, protein-DNA docking, protein-RNA docking, PPI or nucleic-acid complex prediction, or to rerun/analyze LightDock outputs.
-metadata:
-  short-description: Local LightDock protein and nucleic-acid docking
+description_zh: 用本地 LightDock 从 receptor.pdb 与 ligand.pdb 做蛋白-蛋白、蛋白-DNA、蛋白-RNA 对接，含盲对接、fastdfire 打分、swarm 模拟、排序与结果汇总。适用于 PPI 或核酸复合物预测。
+description_en: Run local LightDock protein-protein and protein-nucleic-acid docking workflows from receptor.pdb and ligand.pdb files, including blind docking, fastdfire scoring, swarm simulation, ranking, and result summarization.
+category: 科研/生物
+version: 1.0.0
+author: 小猪莹(keyanzhu999)
 ---
 
 # LightDock Protein And Nucleic-Acid Docking

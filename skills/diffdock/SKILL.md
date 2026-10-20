@@ -1,6 +1,13 @@
 ---
 name: diffdock
+display_name: DiffDock 云端分子对接
+display_name_en: DiffDock Cloud Molecular Docking
 description: Cloud-based molecular docking with DiffDock via NVIDIA NIM DiffDock API. Predict protein-ligand binding poses from PDB/SMILES with confidence scores and virtual screening; runs on NVIDIA hosted GPUs with no local GPU or local DiffDock install needed. Requires an NVIDIA API key. Use when the user wants to dock ligands, predict binding poses, run virtual screening, find binding sites without local compute, or explicitly asks for DiffDock. Not for binding affinity prediction.
+description_zh: 通过 NVIDIA NIM DiffDock API 做云端蛋白-配体分子对接，从 PDB/SMILES 预测结合位姿并输出置信度，支持虚拟筛选。无需本地 GPU 或安装 DiffDock，需 NVIDIA API key。
+description_en: Cloud-based molecular docking with DiffDock via NVIDIA NIM DiffDock API. Predict protein-ligand binding poses from PDB/SMILES with confidence scores and virtual screening; no local GPU or DiffDock install needed. Requires an NVIDIA API key.
+category: 科研/生物
+version: 1.0.0
+author: 小猪莹(keyanzhu999)
 ---
 
 # DiffDock_ZY: 云端分子对接（NVIDIA API 版）

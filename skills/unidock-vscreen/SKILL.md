@@ -1,6 +1,13 @@
 ---
 name: unidock-vscreen
+display_name: UniDock-Pro 虚拟筛选
+display_name_en: UniDock-Pro Virtual Screening
 description: Run local UniDock-Pro GPU virtual screening for receptor-ligand libraries. Use when the user asks to screen many small molecules, run UniDock or UniDock-Pro, dock a PDBQT receptor against a ligand directory or ligand index, use reference-ligand guided or hybrid docking, batch large PDBQT libraries, rank docking scores, summarize top hits, or prepare a virtual-screening report from UniDock outputs.
+description_zh: 用本地 UniDock-Pro 对受体-配体库做 GPU 虚拟筛选，支持参考配体引导或混合对接、PDBQT 批量库、打分排序与命中汇总。适用于高通量小分子筛选与候选优先排序。
+description_en: Run local UniDock-Pro GPU virtual screening for receptor-ligand libraries. Use for high-throughput small-molecule screening, reference-ligand guided or hybrid docking, batch PDBQT libraries, score ranking, and top-hit summarization.
+category: 科研/生物
+version: 1.0.0
+author: 小猪莹(keyanzhu999)
 ---
 
 # UniDock VScreen

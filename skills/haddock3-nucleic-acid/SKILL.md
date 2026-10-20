@@ -1,8 +1,13 @@
 ---
 name: haddock3-nucleic-acid
+display_name: HADDOCK3 蛋白-核酸对接
+display_name_en: HADDOCK3 Protein-Nucleic-Acid Docking
 description: Run local HADDOCK3 restraint-guided docking and refinement for protein-DNA or protein-RNA complexes from PDB inputs, with optional ambiguous or unambiguous restraint tables, built-in DNA/RNA topologies, reproducible run directories, and result summaries. Use when the user asks for HADDOCK3, restrained protein-nucleic-acid docking, protein-DNA/RNA interface modeling, or refinement of a nucleic-acid complex.
-metadata:
-  short-description: Local HADDOCK3 protein-DNA/RNA docking
+description_zh: 用本地 HADDOCK3 对蛋白-DNA 或蛋白-RNA 复合物做带约束的对接与精修，支持模糊/明确约束表、内置核酸拓扑、可复现运行目录与结果汇总。适用于 HADDOCK3、约束核酸对接与界面建模。
+description_en: Run local HADDOCK3 restraint-guided docking and refinement for protein-DNA or protein-RNA complexes from PDB inputs, with optional restraint tables, built-in DNA/RNA topologies, reproducible run directories, and result summaries.
+category: 科研/生物
+version: 1.0.0
+author: 小猪莹(keyanzhu999)
 ---
 
 # HADDOCK3 Protein-Nucleic-Acid Docking

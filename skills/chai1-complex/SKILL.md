@@ -1,8 +1,13 @@
 ---
 name: chai1-complex
+display_name: Chai-1 复合物结构预测
+display_name_en: Chai-1 Complex Structure Prediction
 description: Run local Chai-1 complex structure prediction for protein-DNA, protein-RNA, protein-protein, and mixed biomolecular complexes from FASTA or sequence inputs. Use when the user asks for Chai-1, sequence-based nucleic-acid complex prediction, multimer structure modeling, or a complementary structural hypothesis before docking or molecular dynamics.
-metadata:
-  short-description: Local Chai-1 biomolecular complex prediction
+description_zh: 用本地 Chai-1 从 FASTA 或序列预测蛋白-DNA、蛋白-RNA、蛋白-蛋白及混合生物分子复合物结构。适用于序列驱动的核酸复合物预测、多聚体结构建模，或对接与分子动力学前的结构假设。
+description_en: Run local Chai-1 complex structure prediction for protein-DNA, protein-RNA, protein-protein, and mixed biomolecular complexes from FASTA or sequence inputs. Use for sequence-based nucleic-acid complex prediction, multimer structure modeling, or a structural hypothesis before docking or molecular dynamics.
+category: 科研/生物
+version: 1.0.0
+author: 小猪莹(keyanzhu999)
 ---
 
 # Chai-1 Complex Prediction
