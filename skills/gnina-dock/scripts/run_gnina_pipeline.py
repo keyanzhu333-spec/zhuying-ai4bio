@@ -638,7 +638,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--size", nargs=3, type=float, metavar=("SX", "SY", "SZ"))
     parser.add_argument("--autobox-add", type=float, default=4.0)
     parser.add_argument("--out-dir", type=Path, required=True)
-    parser.add_argument("--gnina-bin", help="GNINA executable or Linux binary used by WSL")
+    parser.add_argument(
+        "--gnina-bin",
+        default=os.environ.get("GNINA_BIN"),
+        help="GNINA executable or Linux binary used by WSL; defaults to GNINA_BIN",
+    )
     parser.add_argument("--backend", choices=("auto", "native", "wsl", "docker"), default="auto")
     parser.add_argument("--docker-image", default="gnina/gnina:latest")
     parser.add_argument("--docker-gpus", action="store_true")

@@ -7,7 +7,7 @@ metadata:
 
 # Chai-1 Complex Prediction
 
-Use this skill for local sequence-based complex structure prediction with the installed Chai-1 environment `chai1` (version `0.6.1`). Chai-1 supports proteins, DNA, RNA, and small molecules; this skill focuses on protein-DNA and protein-RNA complexes, with protein-protein or mixed complexes handled when requested.
+Use this skill for local sequence-based complex structure prediction with Chai-1. Chai-1 supports proteins, DNA, RNA, and small molecules; this skill focuses on protein-DNA and protein-RNA complexes, with protein-protein or mixed complexes handled when requested. Detect and report the version on the current machine instead of assuming the developer's version.
 
 Chai-1 predicts candidate structures from sequence and model features. It is not a conventional docking engine and does not by itself provide an experimentally validated binding affinity or a UniDock/GNINA-style docking score.
 
@@ -27,6 +27,22 @@ AUGCAUGC...
 Use protein one-letter amino-acid codes, DNA `A/C/G/T`, and RNA `A/C/G/U`. A sequence containing only `A/C/G` can be ambiguous between DNA and RNA; resolve the entity type using the installed Chai parser or an explicit input convention before a production run. Keep each physical chain as its own FASTA entity and use stable names.
 
 ## Quick Run
+
+Use the portable runner, which resolves `CHAI1_BIN`, the active `PATH`, or a
+named Conda environment and records the command:
+
+```bash
+python3 scripts/run_chai1.py \
+  --input /absolute/path/to/complex.fasta \
+  --out-dir /absolute/path/to/chai1_output \
+  --device cuda \
+  --num-diffn-samples 5
+```
+
+Use `--dry-run` before expensive inference. Additional options supported by the
+installed Chai-1 CLI can be appended to the runner command.
+
+The equivalent direct command is:
 
 ```bash
 conda run -n chai1 chai-lab fold \

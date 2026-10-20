@@ -51,7 +51,21 @@ python3 scripts/install_skills.py --dry-run
 python3 scripts/install_skills.py
 ```
 
+先运行统一环境检查，可看到当前电脑上每个外部工具是否可用：
+
+```bash
+python3 scripts/check_environment.py --versions --json environment-report.json
+```
+
+报告只记录软件可用性和路径，不显示 API Key 的内容。可执行程序路径可通过
+[`config/tools.example.env`](config/tools.example.env) 中的环境变量覆盖；大型数据库、
+模型权重和缓存建议放在仓库外的 `ZY_AI4BIO_DATA`，并参考
+[`config/resources.example.json`](config/resources.example.json) 记录来源、许可证、格式和校验和。
+
 安装器默认复制到 `${CODEX_HOME:-$HOME/.codex}/skills`，遇到已存在的同名技能会停止并保留原文件。也可以用 `--skills zy-ai4bio diffdock gnina-dock` 只安装所需技能，或用 `--target` 指定测试目录。安装技能文件后，还需按上表配置实际计算软件。UniDock-Pro 路径可用 `UNIDOCK_PRO_BIN` 指定，或通过 `--udp` 传入。
+
+完整的跨电脑部署、Windows/WSL2、外部数据和隐私规则见
+[可移植安装说明](docs/portable-installation.md)。
 
 ## 从研究问题开始
 
@@ -73,6 +87,8 @@ python3 scripts/install_skills.py
 zy-ai4bio/                Codex 工作流路由
 skills/                   12 个可独立安装的子技能
 scripts/install_skills.py 安装器
+scripts/check_environment.py 跨机器运行环境诊断
+config/                   工具路径与外部资源配置样例（不含密钥）
 docs/                     公众号文案与本地筛选库接入说明
 SKILL.md + scripts/       早期 ZYDock 接口，保留兼容
 ```

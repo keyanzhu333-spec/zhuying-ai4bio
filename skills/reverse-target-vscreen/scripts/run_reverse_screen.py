@@ -104,7 +104,7 @@ def run_command(cmd: list[str], log: Path | None = None) -> subprocess.Completed
 
 
 def prepare_ligand(args: argparse.Namespace, inputs: Path) -> tuple[Path, Path | None, dict[str, Any]]:
-    obabel = shutil.which("obabel")
+    obabel = os.environ.get("OBABEL_BIN") or shutil.which("obabel")
     if not obabel:
         raise SystemExit("Open Babel executable 'obabel' was not found.")
 

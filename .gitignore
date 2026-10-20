@@ -11,6 +11,19 @@ credentials
 .env
 runtime_manifest.json
 runtime/
+environment-report.json
+resources.local.json
+
+# Large local scientific resources
+/data/
+/databases/
+/models/
+/checkpoints/
+*.xtc
+*.trr
+*.tpr
+*.cpt
+*.edr
 
 # Docking / analysis outputs (generated at runtime)
 results/

@@ -17,8 +17,8 @@ UDP = Path(os.environ.get("UNIDOCK_PRO_BIN") or shutil.which("udp") or Path.home
 GNINA_CHECK = SKILLS_ROOT / "gnina-dock/scripts/install_gnina_runtime.py"
 DIFFDOCK = SKILLS_ROOT / "diffdock/SKILL.md"
 DIFFDOCK_CREDENTIALS = Path.home() / ".config" / "ZYDock" / "credentials"
-CHAI = shutil.which("chai-lab")
-PLIP = shutil.which("plip")
+CHAI = os.environ.get("CHAI1_BIN") or shutil.which("chai-lab")
+PLIP = os.environ.get("PLIP_BIN") or shutil.which("plip")
 VIEWER_ROOT = CODEX_HOME / "plugins/cache/openai-curated-remote/structure-viewer"
 
 
@@ -28,7 +28,7 @@ def main() -> int:
     parser.add_argument("--strict", action="store_true", help="Fail if a core dependency is missing.")
     args = parser.parse_args()
 
-    obabel = shutil.which("obabel")
+    obabel = os.environ.get("OBABEL_BIN") or shutil.which("obabel")
     gnina_runtime: dict[str, object] = {
         "checked": False,
         "complete": bool(shutil.which("gnina")),

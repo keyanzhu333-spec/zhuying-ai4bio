@@ -17,8 +17,18 @@ SCORING="${SCORING:-fastdfire}"
 CORES="${CORES:-$(nproc 2>/dev/null || echo 8)}"
 TOPN="${TOPN:-10}"
 ANM_FLAG="${ANM_FLAG:---anm}"
+SETUP_BIN="${LIGHTDOCK_SETUP_BIN:-lightdock3_setup.py}"
+RUN_BIN="${LIGHTDOCK_RUN_BIN:-lightdock3.py}"
 export LIGHTDOCK_ANM_REC="${LIGHTDOCK_ANM_REC:-10}"
 export LIGHTDOCK_ANM_LIG="${LIGHTDOCK_ANM_LIG:-10}"
+
+for executable in "$SETUP_BIN" "$RUN_BIN" lgd_generate_conformations.py lgd_cluster_bsas.py lgd_rank.py lgd_top.py; do
+  if [[ "$executable" == */* ]]; then
+    [[ -x "$executable" ]] || { echo "LightDock executable is not usable: $executable" >&2; exit 2; }
+  else
+    command -v "$executable" >/dev/null 2>&1 || { echo "LightDock command not found: $executable" >&2; exit 2; }
+  fi
+done
 
 if [[ $# -eq 0 ]]; then
   mapfile -t CASES < <(find "$ROOT" -mindepth 1 -maxdepth 3 -type f -name receptor.pdb -printf '%h\n' | sort)
@@ -42,12 +52,12 @@ run_one() {
 
   cd "$dir"
 
-  lightdock3_setup.py receptor.pdb ligand.pdb \
+  "$SETUP_BIN" receptor.pdb ligand.pdb \
     -s "$SWARMS" -g "$GLOWWORMS" \
     $ANM_FLAG \
     --noxt --noh --now
 
-  lightdock3.py setup.json "$STEPS" \
+  "$RUN_BIN" setup.json "$STEPS" \
     -s "$SCORING" -c "$CORES"
 
   local sw

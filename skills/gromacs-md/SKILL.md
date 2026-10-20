@@ -41,6 +41,23 @@ python3 scripts/init_md_case.py \
   --out-dir <project>
 ```
 
+The initializer also renders reviewed starting-point MDP files for minimization,
+NVT, NPT, and production under `simulation/mdp/`. Temperature, pressure,
+durations, and random seed are explicit command-line parameters. These files are
+not universal force-field recommendations: inspect them against the selected
+force field, membrane/solvent model, restraints, and scientific question.
+
+Check the local runtime independently of any project:
+
+```bash
+python3 scripts/check_gromacs.py --json gromacs-environment.json
+```
+
+Before execution, place a validated `topol.top` and `system.gro` in
+`simulation/system/`; add `index.ndx` when named custom groups are required.
+The skill does not pretend that arbitrary ligands, metals, or nucleic acids can
+be parameterized by one generic command.
+
 ## Preflight
 
 1. Confirm biological assembly, chains, residue names, alternate conformations, missing atoms/residues, termini, disulfides, protonation, cofactors, ions, crystallographic waters, and nonstandard residues.
@@ -62,6 +79,38 @@ Use the same gated progression for all scenarios:
 6. **Production:** run only after the short validation is clean; prefer multiple independent replicas over one unsupported narrative from a single trajectory.
 7. **Trajectory processing:** remove PBC artifacts, make molecules whole, center consistently, and fit using a stated selection before analysis.
 8. **Analysis and plotting:** calculate common and scenario-specific metrics, assess convergence, and retain commands, selections, frame ranges, and units.
+
+## Execute Validated Stages
+
+Dry-run the exact commands first:
+
+```bash
+python3 scripts/run_md_stages.py \
+  --project <project> \
+  --through npt \
+  --dry-run
+```
+
+Then run minimization and equilibration after reviewing `simulation/mdp/` and
+the complete topology:
+
+```bash
+python3 scripts/run_md_stages.py --project <project> --through npt
+```
+
+Production is gated and requires explicit approval:
+
+```bash
+python3 scripts/run_md_stages.py \
+  --project <project> \
+  --through production \
+  --approve-production
+```
+
+The default accelerator is CPU for portability. Use `--accelerator gpu` only
+after `check_gromacs.py` and a short test confirm a compatible GROMACS/CUDA
+runtime. Override the executable with `--gmx` or `GMX_BIN`. The runner does not
+add `-maxwarn`; a nonzero allowance must be supplied explicitly and justified.
 
 ## Analysis And Plotting
 

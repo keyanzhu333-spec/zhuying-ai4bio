@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "data_root": "${ZY_AI4BIO_DATA}",
+  "resources": [
+    {
+      "id": "example_ligand_library",
+      "kind": "ligand-library",
+      "path": "libraries/example/screening_ready",
+      "format": "pdbqt",
+      "index": "libraries/example/ligand_index.txt",
+      "source_url": "https://example.org/source-record",
+      "license": "REPLACE_WITH_SOURCE_LICENSE",
+      "checksum_manifest": "libraries/example/SHA256SUMS"
+    },
+    {
+      "id": "example_target_panel",
+      "kind": "target-library",
+      "path": "targets/example",
+      "format": "pdbqt",
+      "manifest": "targets/example/target_manifest.csv",
+      "source_url": "https://example.org/source-record",
+      "license": "REPLACE_WITH_SOURCE_LICENSE",
+      "checksum_manifest": "targets/example/SHA256SUMS"
+    }
+  ]
+}
