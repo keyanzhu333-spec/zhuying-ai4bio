@@ -171,6 +171,12 @@ quit
 
 Use a stable object/state selection and confirm that the selected ligand is the intended molecule and pose. If the receptor is supplied as PDBQT, also supply `--receptor-pdb` for visualization and PLIP.
 
+Keep the overall image clean: full-protein cartoon, highlighted ligand, and
+pocket sticks only. Do not add residue labels, atom/residue indices, legends,
+or callout leader lines to the overview. Keep residue labels and interaction
+annotations in the separate local-pocket image. Apply this convention to both
+the exported PNG and its saved PyMOL session unless the user requests otherwise.
+
 ### 6. Run PLIP and inspect interactions
 
 Run PLIP on one selected complex, not on a receptor alone and not on all poses merged together:

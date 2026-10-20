@@ -492,16 +492,12 @@ def make_pymol_script(
     image: Path,
     state: int,
 ) -> str:
-    """Build the overview render script (callout style, full protein + top pose).
+    """Render the full complex without labels, indices, legends, or leader lines.
 
-    The whole protein is shown as an opaque lightblue cartoon, the docked
-    ligand as yellow sticks, and pocket residues (within 5 A of the ligand)
-    are labelled with collision-avoiding callout leader lines. Returns the
-    final merged complex PDB path is written during rendering.
+    Keep residue annotations in the separate local-pocket interaction view.
     """
-    return f"""import math
-import pymol
-from pymol import cmd, cgo
+    return f"""import pymol
+from pymol import cmd
 
 cmd.load("{receptor_pdb.resolve().as_posix()}", "receptor")
 cmd.load("{poses_sdf.resolve().as_posix()}", "ligand_poses")
@@ -546,109 +542,8 @@ cmd.color("blue", "contact_residues and elem N")
 cmd.color("red", "contact_residues and elem O")
 cmd.color("yellow", "contact_residues and elem S")
 
-# callout 防碰撞标注：标注「任意原子距配体 4.5A 内」的接触残基（上限 10 个，按距离排序）
-RESIDUES = []
-_lig = cmd.get_model("ligand_local").atom
-lig_coords = [a.coord for a in _lig]
-_ca_by_resi = {{}}
-for _a in cmd.get_model("byres (complex_struct and polymer within 4.5 of ligand_local) and name CA").atom:
-    _ca_by_resi[_a.resi] = (_a.resn, _a.coord)
-_dist = []
-for resi, (resn, ca) in _ca_by_resi.items():
-    dmin = min(math.sqrt(sum((ca[k] - lc[k]) ** 2 for k in range(3))) for lc in lig_coords)
-    _dist.append((dmin, resn, resi))
-_dist.sort()
-_dedup = set()
-for dmin, resn, resi in _dist:
-    if resi not in _dedup:
-        _dedup.add(resi)
-        RESIDUES.append("%s %s" % (resn, resi))
-    if len(RESIDUES) >= 10:
-        break
-LEADER_RADIUS = 16.0
-MIN_ANGULAR_GAP = math.radians(40)
-
+cmd.hide("labels", "all")
 cmd.orient("ligand_local")
-lig_atoms = cmd.get_model("ligand_local").atom
-center = [sum(a.coord[i] for a in lig_atoms) / len(lig_atoms) for i in range(3)]
-
-view = cmd.get_view()
-rot = [[view[0], view[1], view[2]], [view[3], view[4], view[5]], [view[6], view[7], view[8]]]
-tr = [view[12], view[13], view[14]]
-
-
-def to_cam(p):
-    return [sum(rot[i][j] * p[j] for j in range(3)) + tr[i] for i in range(3)]
-
-
-def to_model(p):
-    d = [p[i] - tr[i] for i in range(3)]
-    return [sum(rot[j][i] * d[j] for j in range(3)) for i in range(3)]
-
-
-center_cam = to_cam(center)
-angles = {{}}
-ca_model = {{}}
-restype_of = {{}}
-for label_text in RESIDUES:
-    restype, resnr = label_text.rsplit(" ", 1)
-    restype_of[resnr] = restype
-    atoms = cmd.get_model("resi %s and name CA and polymer" % resnr).atom
-    if not atoms:
-        continue
-    ca = atoms[0].coord
-    ca_model[resnr] = ca
-    ca_cam = to_cam(ca)
-    angles[resnr] = math.atan2(ca_cam[1] - center_cam[1], ca_cam[0] - center_cam[0])
-
-ordered = sorted(angles, key=lambda r: angles[r])
-adjusted = {{}}
-previous = None
-for resnr in ordered:
-    angle = angles[resnr]
-    if previous is not None:
-        while angle - previous < MIN_ANGULAR_GAP:
-            angle += MIN_ANGULAR_GAP - (angle - previous)
-    adjusted[resnr] = angle
-    previous = angle
-
-cmd.set("label_font_id", 7)
-cmd.set("label_size", 16)
-cmd.set("label_color", "black")
-cmd.set("label_shadow_mode", 1)
-
-# 蛋白最前方深度 + 10A：标签统一放在蛋白前面，防止遮挡且不越过相机裁剪面
-_z_front = max(to_cam(a.coord)[2] for a in cmd.get_model("complex_struct and name CA").atom)
-LABEL_Z = _z_front + 10.0
-
-leaders = []
-for resnr, angle in adjusted.items():
-    ca = ca_model[resnr]
-    ca_cam = to_cam(ca)
-    label_cam = [
-        center_cam[0] + math.cos(angle) * LEADER_RADIUS,
-        center_cam[1] + math.sin(angle) * LEADER_RADIUS,
-        LABEL_Z,
-    ]
-    label_pos = to_model(label_cam)
-    pseudo = "callout_%s" % resnr
-    cmd.pseudoatom(pseudo, pos=label_pos, label="%s %s" % (restype_of[resnr], resnr))
-    segments = 6
-    for i in range(segments):
-        t0 = 0.20 + 0.65 * (i / segments)
-        t1 = 0.20 + 0.65 * ((i + 0.5) / segments)
-        ax = ca[0] + (label_pos[0] - ca[0]) * t0
-        ay = ca[1] + (label_pos[1] - ca[1]) * t0
-        az = ca[2] + (label_pos[2] - ca[2]) * t0
-        bx = ca[0] + (label_pos[0] - ca[0]) * t1
-        by = ca[1] + (label_pos[1] - ca[1]) * t1
-        bz = ca[2] + (label_pos[2] - ca[2]) * t1
-        leaders += [cgo.BEGIN, cgo.LINES, cgo.LINEWIDTH, 2.0,
-                    cgo.COLOR, 0.40, 0.40, 0.40,
-                    cgo.VERTEX, ax, ay, az, cgo.VERTEX, bx, by, bz,
-                    cgo.END]
-
-cmd.load_cgo(leaders, "callout_leaders")
 cmd.zoom("complex_struct", 2)
 cmd.save("{complex_pdb.resolve().as_posix()}", "complex_struct")
 cmd.save("{session.resolve().as_posix()}")
