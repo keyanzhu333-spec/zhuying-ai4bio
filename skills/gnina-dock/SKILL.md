@@ -66,6 +66,8 @@ The user must provide or confirm biological decisions that software cannot infer
 
 Read [analysis_guide.md](references/analysis_guide.md) before interpreting results.
 
+For Windows/WSL2 environment setup, GNINA/PyMOL/PLIP installation pitfalls, and rendering conventions that match the `diffdock` skill, read [install_lessons_learned.md](references/install_lessons_learned.md).
+
 ## Standard workflow
 
 ### 1. Prepare and validate structures

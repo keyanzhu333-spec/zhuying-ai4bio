@@ -168,6 +168,8 @@ set ray_trace_fog, 0
 set depth_cue, 0
 set antialias, 2
 set line_smooth, 1
+set hash_max, 300
+set ray_opaque_background, 1
 set light_count, 8
 set specular, 0.3
 set shininess, 50
@@ -193,7 +195,7 @@ set cartoon_transparency, 0.8, complex_struct and polymer
 set stick_radius, 0.18
 show sticks, contact_residues
 set label_font_id, 7
-set label_size, 12
+set label_size, 18
 set label_color, black
 set label_shadow_mode, 1
 {label_commands}
@@ -386,6 +388,8 @@ set ray_trace_fog, 0
 set depth_cue, 0
 set antialias, 2
 set line_smooth, 1
+set hash_max, 300
+set ray_opaque_background, 1
 set light_count, 8
 set specular, 0.3
 set shininess, 50
@@ -400,7 +404,7 @@ set cartoon_rect_width, 0.5
 set cartoon_loop_radius, 0.7
 show cartoon, receptor
 show sticks, ligand_poses
-color cyan, receptor
+color lightblue, receptor
 color yellow, ligand_poses
 set cartoon_transparency, 0.0, receptor
 orient complex_pose{state}
