@@ -29,44 +29,31 @@ Usage:
 """
 import argparse
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-ENV_NAME = "PLIP"
-CONDA_SH = os.path.expanduser("~/anaconda3/etc/profile.d/conda.sh")
-# Alternative conda paths
-CONDA_SH_CANDIDATES = [
-    CONDA_SH,
-    os.path.expanduser("~/miniconda3/etc/profile.d/conda.sh"),
-    "/opt/conda/etc/profile.d/conda.sh",
-]
-
-
-def find_conda_sh():
-    for path in CONDA_SH_CANDIDATES:
-        if os.path.isfile(path):
-            return path
-    return None
+ENV_NAME = os.environ.get("PLIP_CONDA_ENV", "PLIP")
 
 
 def run_in_plip_env(cmd, cwd=None):
-    """Run a shell command inside the PLIP conda environment."""
-    conda_sh = find_conda_sh()
-    if conda_sh:
-        full = f"source {conda_sh} && conda activate {ENV_NAME} && {cmd}"
+    """Use an active PLIP installation or a configurable Conda environment."""
+    if not isinstance(cmd, list):
+        raise TypeError("Commands must be argument lists")
+    override = {"plip": "PLIP_BIN", "obabel": "OBABEL_BIN", "pymol": "PYMOL_BIN"}.get(cmd[0])
+    executable = os.environ.get(override, cmd[0]) if override else cmd[0]
+    resolved = shutil.which(os.path.expanduser(executable))
+    if resolved and (cmd[0] != "python" or shutil.which("plip")):
+        command = [resolved, *cmd[1:]]
     else:
-        # fallback: use conda run
-        conda_exe = os.environ.get("CONDA_EXE", "conda")
-        full = f"{conda_exe} run -n {ENV_NAME} {cmd}"
-
-    result = subprocess.run(
-        full, shell=True, executable="/bin/bash",
-        capture_output=True, text=True, cwd=cwd
-    )
-    return result
+        conda = os.environ.get("CONDA_EXE") or shutil.which("conda")
+        if not conda:
+            raise SystemExit("PLIP toolchain missing: activate its environment or set CONDA_EXE.")
+        command = [conda, "run", "-n", ENV_NAME, *cmd]
+    return subprocess.run(command, capture_output=True, text=True, cwd=cwd)
 
 
 def merge_protein_ligand(protein_pdb, ligand_sdf, out_pdb):
@@ -77,18 +64,16 @@ def merge_protein_ligand(protein_pdb, ligand_sdf, out_pdb):
     """
     # Convert ligand SDF to PDB format (as HETATM records)
     ligand_pdb_tmp = out_pdb + ".lig.pdb"
-    result = run_in_plip_env(f"obabel '{ligand_sdf}' -O '{ligand_pdb_tmp}' -opdb")
+    result = run_in_plip_env(["obabel", ligand_sdf, "-O", ligand_pdb_tmp, "-opdb"])
     if result.returncode != 0:
         print(f"[warn] obabel 转换失败: {result.stderr.strip()}")
         # Try python-based approach as fallback
         result2 = run_in_plip_env(
-            f"python -c \""
-            f"from openbabel import openbabel as ob;"
-            f"conv=ob.OBConversion();"
-            f"conv.SetInAndOutFormats('sdf','pdb');"
-            f"mol=ob.OBMol();"
-            f"conv.ReadFile(mol,'{ligand_sdf}');"
-            f"conv.WriteFile(mol,'{ligand_pdb_tmp}')\""
+            ["python", "-c",
+             "import sys; from openbabel import openbabel as ob;"
+             "conv=ob.OBConversion();conv.SetInAndOutFormats('sdf','pdb');"
+             "mol=ob.OBMol();conv.ReadFile(mol,sys.argv[1]);conv.WriteFile(mol,sys.argv[2])",
+             ligand_sdf, ligand_pdb_tmp]
         )
         if result2.returncode != 0:
             sys.exit(f"ERROR: 无法将配体 SDF 转为 PDB: {result2.stderr}")
@@ -146,7 +131,7 @@ def merge_protein_ligand(protein_pdb, ligand_sdf, out_pdb):
 def run_plip(complex_pdb, out_dir):
     """Run PLIP analysis: plip -f com.pdb -ypxt"""
     os.makedirs(out_dir, exist_ok=True)
-    cmd = f"plip -f '{os.path.abspath(complex_pdb)}' -ypxt -o '{os.path.abspath(out_dir)}'"
+    cmd = ["plip", "-f", os.path.abspath(complex_pdb), "-ypxt", "-o", os.path.abspath(out_dir)]
     print(f"[plip] 运行: {cmd}")
     result = run_in_plip_env(cmd, cwd=out_dir)
     if result.returncode != 0:
@@ -201,8 +186,8 @@ import pymol
 from pymol import cmd
 
 # Load PLIP session (contains interaction visualizations) and complex
-cmd.load('{pse_basename}')
-cmd.load('{complex_basename}', 'complex_struct')
+cmd.load({pse_basename!r})
+cmd.load({complex_basename!r}, 'complex_struct')
 
 # ===== 1. Background and overall style =====
 cmd.bg_color('white')
@@ -269,24 +254,21 @@ cmd.quit()
 
     # Run pymol with cwd set to out_dir. Use the script basename since cwd is out_dir.
     abs_out_dir = os.path.abspath(out_dir)
-    cmd_str = f"cd '{abs_out_dir}' && pymol -cq '_pymol_render.py'"
+    cmd_args = ["pymol", "-cq", "_pymol_render.py"]
     print(f"[pymol] 渲染高质量交互图 (300 DPI, 含残基标签): {png_path}")
     if interacting_residues:
         print(f"[pymol] 标注残基: {', '.join(interacting_residues)}")
 
     # Use system pymol directly (not through PLIP env) — pymol rendering
     # doesn't need PLIP's python packages, and conda activate can break pymol paths.
-    result = subprocess.run(
-        cmd_str, shell=True, executable="/bin/bash",
-        capture_output=True, text=True,
-    )
+    result = run_in_plip_env(cmd_args, cwd=abs_out_dir)
 
     if not os.path.isfile(png_path):
         # Fallback: try PLIP env pymol
         if result.stderr:
             print(f"[pymol] 系统 pymol stderr: {result.stderr[:300]}")
         print("[pymol] 系统 PyMOL 未生成图片，尝试 PLIP 环境 PyMOL...")
-        result2 = run_in_plip_env(cmd_str)
+        result2 = run_in_plip_env(cmd_args, cwd=abs_out_dir)
         if not os.path.isfile(png_path) and result2.stderr:
             print(f"[pymol] PLIP env pymol stderr: {result2.stderr[:300]}")
 
@@ -414,7 +396,7 @@ def main():
 
     # 1. Check PLIP environment
     print("[check] 验证 PLIP 环境...")
-    result = run_in_plip_env("plip -h")
+    result = run_in_plip_env(["plip", "-h"])
     if result.returncode != 0:
         print("[error] PLIP 环境未就绪，请先运行: python scripts/setup_plip.py")
         sys.exit(1)

@@ -9,8 +9,29 @@ venv/
 credentials
 *.key
 .env
+.env.*
+!*.example.env
+*.local.env
+*.local.json
+*.pem
+*.p12
+*.pfx
 runtime_manifest.json
 runtime/
+runtime_pymol_whl/
+environment-report.json
+resources.local.json
+
+# Large local scientific resources
+/data/
+/databases/
+/models/
+/checkpoints/
+*.xtc
+*.trr
+*.tpr
+*.cpt
+*.edr
 
 # Docking / analysis outputs (generated at runtime)
 results/

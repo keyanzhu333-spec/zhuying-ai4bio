@@ -1,0 +1,17 @@
+name: zy-gnina
+channels:
+  - conda-forge
+  - bioconda
+  - nodefaults
+dependencies:
+  - python=3.11
+  - pip
+  - rdkit
+  - openbabel
+  - pymol-open-source
+  - plip
+  - scipy
+  - gemmi
+  - prody
+  - pip:
+      - meeko==0.7.1

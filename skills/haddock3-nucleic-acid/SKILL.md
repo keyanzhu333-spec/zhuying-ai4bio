@@ -7,7 +7,7 @@ metadata:
 
 # HADDOCK3 Protein-Nucleic-Acid Docking
 
-Use this skill for local HADDOCK3 runs involving one protein and one DNA or RNA partner. The installed environment is `haddock3`, version `2026.7.0`. HADDOCK3 is especially appropriate when the user has interface information, residue restraints, experimental contacts, mutagenesis evidence, or wants explicit refinement after rigid-body sampling.
+Use this skill for local HADDOCK3 runs involving one protein and one DNA or RNA partner. HADDOCK3 is especially appropriate when the user has interface information, residue restraints, experimental contacts, mutagenesis evidence, or wants explicit refinement after rigid-body sampling. Detect and report the version on the current machine instead of assuming the developer's version.
 
 HADDOCK3 produces ranked structural models and cluster statistics. Scores are computational model-selection signals, not experimental binding affinities.
 
@@ -56,6 +56,14 @@ Run with the installed environment:
 
 ```bash
 conda run -n haddock3 haddock3 /absolute/path/to/run.cfg
+```
+
+Alternatively use the portable wrapper, which resolves `HADDOCK3_BIN`, the
+active `PATH`, or a named Conda environment and records the command and log:
+
+```bash
+python3 scripts/run_haddock3.py /absolute/path/to/run.cfg --setup-only
+python3 scripts/run_haddock3.py /absolute/path/to/run.cfg
 ```
 
 For a setup-only validation before a long run:

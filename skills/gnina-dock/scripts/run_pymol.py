@@ -13,11 +13,10 @@ def main() -> int:
     skill_dir = Path(__file__).resolve().parents[1]
     pymol_runtime = skill_dir / "runtime_pymol_whl"
     plip_runtime = skill_dir / "runtime"
-    if not pymol_runtime.is_dir():
-        raise FileNotFoundError(f"PyMOL runtime not found: {pymol_runtime}")
-
-    sys.path.insert(0, str(pymol_runtime))
-    sys.path.insert(1, str(plip_runtime))
+    if pymol_runtime.is_dir():
+        sys.path.insert(0, str(pymol_runtime))
+    if plip_runtime.is_dir():
+        sys.path.insert(1, str(plip_runtime))
     dll_dirs = [pymol_runtime, pymol_runtime / "pymol", plip_runtime]
     for directory in dll_dirs:
         if hasattr(os, "add_dll_directory") and directory.is_dir():

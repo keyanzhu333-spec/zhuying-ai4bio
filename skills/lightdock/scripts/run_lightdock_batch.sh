@@ -16,17 +16,35 @@ STEPS="${STEPS:-100}"
 SCORING="${SCORING:-fastdfire}"
 CORES="${CORES:-$(nproc 2>/dev/null || echo 8)}"
 TOPN="${TOPN:-10}"
-ANM_FLAG="${ANM_FLAG:---anm}"
+ANM_FLAG="${ANM_FLAG---anm}"
+SETUP_BIN="${LIGHTDOCK_SETUP_BIN:-lightdock3_setup.py}"
+RUN_BIN="${LIGHTDOCK_RUN_BIN:-lightdock3.py}"
 export LIGHTDOCK_ANM_REC="${LIGHTDOCK_ANM_REC:-10}"
 export LIGHTDOCK_ANM_LIG="${LIGHTDOCK_ANM_LIG:-10}"
 
+for executable in "$SETUP_BIN" "$RUN_BIN" lgd_generate_conformations.py lgd_cluster_bsas.py lgd_rank.py lgd_top.py; do
+  if [[ "$executable" == */* ]]; then
+    [[ -x "$executable" ]] || { echo "LightDock executable is not usable: $executable" >&2; exit 2; }
+  else
+    command -v "$executable" >/dev/null 2>&1 || { echo "LightDock command not found: $executable" >&2; exit 2; }
+  fi
+done
+SETUP_BIN="$(command -v "$SETUP_BIN")"
+RUN_BIN="$(command -v "$RUN_BIN")"
+[[ "$SETUP_BIN" != /* ]] && SETUP_BIN="$(realpath "$SETUP_BIN")"
+[[ "$RUN_BIN" != /* ]] && RUN_BIN="$(realpath "$RUN_BIN")"
+
 if [[ $# -eq 0 ]]; then
-  mapfile -t CASES < <(find "$ROOT" -mindepth 1 -maxdepth 3 -type f -name receptor.pdb -printf '%h\n' | sort)
+  mapfile -t CASES < <(find -L "$ROOT" -mindepth 1 -maxdepth 3 -type f -name receptor.pdb -printf '%h\n' | sort)
 else
   CASES=()
   for rel in "$@"; do
     CASES+=("$ROOT/$rel")
   done
+fi
+if [[ ${#CASES[@]} -eq 0 ]]; then
+  echo "No LightDock cases found under: $ROOT" >&2
+  exit 2
 fi
 
 run_one() {
@@ -36,26 +54,30 @@ run_one() {
   echo "LightDock case: $rel"
   echo "=================================================================="
   if [[ ! -s "$dir/receptor.pdb" || ! -s "$dir/ligand.pdb" ]]; then
-    echo "[SKIP] $rel lacks receptor.pdb or ligand.pdb" >&2
-    return 0
+    echo "[ERROR] $rel lacks receptor.pdb or ligand.pdb" >&2
+    return 2
   fi
 
   cd "$dir"
+  if [[ -e setup.json || -e rank_by_scoring.list ]]; then
+    echo "Case already contains output; use a new case directory: $dir" >&2
+    return 2
+  fi
 
-  lightdock3_setup.py receptor.pdb ligand.pdb \
+  "$SETUP_BIN" receptor.pdb ligand.pdb \
     -s "$SWARMS" -g "$GLOWWORMS" \
     $ANM_FLAG \
     --noxt --noh --now
 
-  lightdock3.py setup.json "$STEPS" \
+  "$RUN_BIN" setup.json "$STEPS" \
     -s "$SCORING" -c "$CORES"
 
   local sw
   for sw in swarm_*; do
     [[ -d "$sw" ]] || continue
     lgd_generate_conformations.py receptor.pdb ligand.pdb \
-      "$sw/gso_${STEPS}.out" "$GLOWWORMS" >/dev/null 2>&1 || true
-    lgd_cluster_bsas.py "$sw/gso_${STEPS}.out" >/dev/null 2>&1 || true
+      "$sw/gso_${STEPS}.out" "$GLOWWORMS" > "$sw/generate.log" 2>&1
+    lgd_cluster_bsas.py "$sw/gso_${STEPS}.out" > "$sw/cluster.log" 2>&1
   done
 
   lgd_rank.py "$SWARMS" "$STEPS"

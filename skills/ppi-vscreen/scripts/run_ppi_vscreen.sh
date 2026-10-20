@@ -65,7 +65,15 @@ export CORES="${CORES:-$(nproc 2>/dev/null || echo 8)}"
 export ANM_FLAG="${ANM_FLAG- }"
 
 LIGHTDOCK_HELPER="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../lightdock/scripts" && pwd)/run_lightdock_batch.sh"
-conda run -n lightdock "$LIGHTDOCK_HELPER" "$OUTPUT/cases" "${CASE_IDS[@]}"
+if command -v "${LIGHTDOCK_SETUP_BIN:-lightdock3_setup.py}" >/dev/null 2>&1 && command -v "${LIGHTDOCK_RUN_BIN:-lightdock3.py}" >/dev/null 2>&1; then
+  bash "$LIGHTDOCK_HELPER" "$OUTPUT/cases" "${CASE_IDS[@]}"
+elif command -v conda >/dev/null 2>&1; then
+  conda run -n "${LIGHTDOCK_CONDA_ENV:-lightdock}" \
+    bash "$LIGHTDOCK_HELPER" "$OUTPUT/cases" "${CASE_IDS[@]}"
+else
+  echo "LightDock is not available on PATH and Conda was not found." >&2
+  exit 2
+fi
 
 printf 'candidate_id\ttop_score\tranking_file\trepresentative_pdb\n' > "$OUTPUT/screen_summary.tsv"
 while IFS=$'\t' read -r case_id source_pdb case_dir; do

@@ -37,6 +37,11 @@ def find_runtime_python(skill_dir: Path) -> str:
     launcher started with Python 3.13 can still run GNINA, but using that same
     interpreter for ``run_pymol.py`` fails with ``No module named pymol._cmd``.
     """
+    override = os.environ.get("GNINA_PYTHON")
+    if override:
+        return resolve_executable(override)
+    if not (skill_dir / "runtime_pymol_whl").is_dir():
+        return sys.executable
     candidates = [
         os.environ.get("GNINA_PYTHON"),
         str(skill_dir / ".venv" / "bin" / "python"),
@@ -642,14 +647,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--size", nargs=3, type=float, metavar=("SX", "SY", "SZ"))
     parser.add_argument("--autobox-add", type=float, default=4.0)
     parser.add_argument("--out-dir", type=Path, required=True)
-    parser.add_argument("--gnina-bin", help="GNINA executable or Linux binary used by WSL")
+    parser.add_argument(
+        "--gnina-bin",
+        default=os.environ.get("GNINA_BIN"),
+        help="GNINA executable or Linux binary used by WSL; defaults to GNINA_BIN",
+    )
     parser.add_argument("--backend", choices=("auto", "native", "wsl", "docker"), default="auto")
     parser.add_argument("--docker-image", default="gnina/gnina:latest")
     parser.add_argument("--docker-gpus", action="store_true")
     parser.add_argument("--receptor-pdb", type=Path)
     parser.add_argument("--complex-pdb", type=Path)
-    parser.add_argument("--pymol-bin")
-    parser.add_argument("--plip-bin")
+    parser.add_argument("--pymol-bin", default=os.environ.get("PYMOL_BIN"))
+    parser.add_argument("--plip-bin", default=os.environ.get("PLIP_BIN"))
     parser.add_argument("--cnn-scoring", choices=("none", "rescore", "refinement", "all"), default="rescore")
     parser.add_argument("--cnn", default="crossdock_default2018")
     parser.add_argument("--exhaustiveness", type=int, default=16)

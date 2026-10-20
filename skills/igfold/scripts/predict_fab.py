@@ -19,7 +19,10 @@ def read_sequence(value: str) -> str:
         raw = Path(value[1:]).read_text()
     else:
         path = Path(value)
-        raw = path.read_text() if path.exists() and path.is_file() else value
+        try:
+            raw = path.read_text() if path.is_file() else value
+        except OSError:
+            raw = value
 
     lines = []
     for line in raw.splitlines():
@@ -58,9 +61,8 @@ def main() -> int:
     args = build_parser().parse_args()
 
     os.environ.setdefault("PYTHONNOUSERSITE", "1")
-    os.environ.setdefault("TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD", "1")
-    conda_bin = Path(sys.prefix) / "bin"
-    os.environ["PATH"] = f"{conda_bin}:{os.environ.get('PATH', '')}"
+    conda_bin = Path(sys.prefix) / ("Scripts" if os.name == "nt" else "bin")
+    os.environ["PATH"] = f"{conda_bin}{os.pathsep}{os.environ.get('PATH', '')}"
 
     from igfold import IgFoldRunner
 

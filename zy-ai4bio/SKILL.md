@@ -9,6 +9,15 @@ Use this as the top-level coordinator for biology and drug-discovery tasks. Rout
 
 The sibling skills under `skills/` are bundled with this repository, but their scientific software and model weights are separate dependencies. Database, literature API, sequence-viewer, and structure-viewer plugin skills are optional Codex integrations. Check that a child skill and its runtime are available before routing work to it, and report a missing dependency when a requested stage cannot run.
 
+For a new machine, run `scripts/check_environment.py` from this installed
+skill directory (the installer bundles it), or from the repository root.
+Read `references/portable-installation.md` for dependency setup.
+Use explicit environment-variable overrides before searching `PATH`; never insert a developer's
+home directory into a skill. Keep model weights and screening databases outside
+Git under `ZY_AI4BIO_DATA`, with provenance and checksums recorded using
+`assets/config/resources.example.json` in the installed skill, or
+`config/resources.example.json` in the repository.
+
 For a Windows user who needs Linux-oriented local computation, use `zy-ai4bio-wsl2-setup` to detect and reuse an existing WSL2 distribution or prepare one when absent. Native Windows Codex can still use skills that do not require Linux executables; do not treat WSL2 as mandatory for every request. Before running shell-based scientific workflows, verify the Codex agent is actually executing in WSL2 and the required scientific software is installed there.
 
 ## Routing
@@ -54,4 +63,7 @@ Read `references/skill-map.md` when the task is broad, ambiguous, or involves mo
 
 - Do not merge unrelated outputs into one folder. Prefer stage folders such as `docking/`, `interactions/`, `report/`, `md/`, `figures/`, `tables/`, and `literature/`.
 - Do not expose or store API keys in skill folders, output folders, command text, reports, or Git history.
+- Do not copy Conda environments, downloaded executables, model weights, large
+  SDF/PDBQT libraries, trajectories, or machine-specific absolute paths into a
+  skill. Ship reproducible installers, manifests, and checks instead.
 - For scientific claims, distinguish prediction, annotation, database fact, literature evidence, and experimental validation.

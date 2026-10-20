@@ -104,7 +104,7 @@ def run_command(cmd: list[str], log: Path | None = None) -> subprocess.Completed
 
 
 def prepare_ligand(args: argparse.Namespace, inputs: Path) -> tuple[Path, Path | None, dict[str, Any]]:
-    obabel = shutil.which("obabel")
+    obabel = shutil.which(os.path.expanduser(os.environ.get("OBABEL_BIN") or "obabel"))
     if not obabel:
         raise SystemExit("Open Babel executable 'obabel' was not found.")
 
@@ -175,8 +175,8 @@ def queue_rows(rows: list[dict[str, Any]], count: int) -> list[dict[str, Any]]:
     return rows[: max(0, min(count, len(rows)))]
 
 
-def run_preflight() -> dict[str, Any]:
-    proc = run_command([sys.executable, str(PREFLIGHT_CHECK), "--deep"])
+def run_preflight(udp: str) -> dict[str, Any]:
+    proc = run_command([sys.executable, str(PREFLIGHT_CHECK), "--deep", "--udp", udp])
     try:
         return json.loads(proc.stdout)
     except json.JSONDecodeError:
@@ -208,7 +208,7 @@ def main() -> int:
     for directory in (inputs, screening / "unidock", screening / "logs", report, queues):
         directory.mkdir(parents=True, exist_ok=True)
 
-    preflight = run_preflight()
+    preflight = run_preflight(args.udp)
     (report / "preflight.json").write_text(json.dumps(preflight, indent=2), encoding="utf-8")
     if not preflight.get("core_ready", False):
         raise SystemExit(f"Core reverse-screening dependencies are not ready; see {report / 'preflight.json'}")

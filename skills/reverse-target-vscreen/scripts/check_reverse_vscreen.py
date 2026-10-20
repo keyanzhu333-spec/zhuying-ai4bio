@@ -8,6 +8,7 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 
@@ -17,8 +18,8 @@ UDP = Path(os.environ.get("UNIDOCK_PRO_BIN") or shutil.which("udp") or Path.home
 GNINA_CHECK = SKILLS_ROOT / "gnina-dock/scripts/install_gnina_runtime.py"
 DIFFDOCK = SKILLS_ROOT / "diffdock/SKILL.md"
 DIFFDOCK_CREDENTIALS = Path.home() / ".config" / "ZYDock" / "credentials"
-CHAI = shutil.which("chai-lab")
-PLIP = shutil.which("plip")
+CHAI = os.environ.get("CHAI1_BIN") or shutil.which("chai-lab")
+PLIP = os.environ.get("PLIP_BIN") or shutil.which("plip")
 VIEWER_ROOT = CODEX_HOME / "plugins/cache/openai-curated-remote/structure-viewer"
 
 
@@ -26,9 +27,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Check reverse-screening dependencies.")
     parser.add_argument("--deep", action="store_true", help="Run the GNINA runtime checker.")
     parser.add_argument("--strict", action="store_true", help="Fail if a core dependency is missing.")
+    parser.add_argument("--udp", default=str(UDP), help="Executable used by the actual screen")
     args = parser.parse_args()
 
-    obabel = shutil.which("obabel")
+    obabel = shutil.which(os.path.expanduser(os.environ.get("OBABEL_BIN") or "obabel"))
+    udp = shutil.which(os.path.expanduser(args.udp))
     gnina_runtime: dict[str, object] = {
         "checked": False,
         "complete": bool(shutil.which("gnina")),
@@ -36,7 +39,7 @@ def main() -> int:
     }
     if args.deep and GNINA_CHECK.is_file():
         proc = subprocess.run(
-            ["python3", str(GNINA_CHECK), "--check"],
+            [sys.executable, str(GNINA_CHECK), "--check"],
             text=True,
             capture_output=True,
             check=False,
@@ -50,7 +53,7 @@ def main() -> int:
     report = {
         "core": {
             "open_babel": {"available": bool(obabel), "executable": obabel},
-            "unidock_pro": {"available": UDP.is_file() and os.access(UDP, os.X_OK), "executable": str(UDP)},
+            "unidock_pro": {"available": bool(udp), "executable": udp},
         },
         "follow_up": {
             "gnina_runtime": gnina_runtime,
@@ -59,8 +62,8 @@ def main() -> int:
                 "configured": bool(os.environ.get("NVIDIA_API_KEY")) or DIFFDOCK_CREDENTIALS.is_file(),
                 "secret_displayed": False,
             },
-            "chai1": {"available": bool(CHAI), "executable": CHAI},
-            "plip": {"available": bool(PLIP), "executable": PLIP},
+            "chai1": {"available": bool(CHAI and shutil.which(os.path.expanduser(CHAI))), "executable": CHAI},
+            "plip": {"available": bool(PLIP and shutil.which(os.path.expanduser(PLIP))), "executable": PLIP},
             "structure_viewer": {"available": any(VIEWER_ROOT.glob("*/skills/structure-viewer/SKILL.md"))},
         },
     }

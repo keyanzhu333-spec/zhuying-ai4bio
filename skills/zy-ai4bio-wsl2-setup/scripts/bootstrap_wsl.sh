@@ -6,10 +6,10 @@ if [[ -z "${WSL_DISTRO_NAME:-}" ]]; then
   exit 2
 fi
 
-repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+repo_root="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)}"
 installer="$repo_root/scripts/install_skills.py"
 if [[ ! -f "$installer" ]]; then
-  echo "Repository installer not found: $installer" >&2
+  echo "Pass the cloned repository root as the first argument; installer not found: $installer" >&2
   exit 2
 fi
 

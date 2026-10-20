@@ -197,7 +197,7 @@ python scripts/analyze_results.py results/batch/ --export ranking.csv
 # 检测/创建 PLIP 环境(已存在则跳过创建)
 python scripts/setup_plip.py
 ```
-`setup_plip.py` 会检测名为 `PLIP` 的 conda 环境是否存在：存在就直接用；不存在则自动创建（Python 3.10 + imagemagick + pymol-open-source + plip）。
+`setup_plip.py` 使用 Conda 环境 `PLIP`（可用 `--env` 或 `PLIP_CONDA_ENV` 修改），安装 Python 3.11、Open Babel、PyMOL、PLIP 和 ImageMagick，并检查实际导入与命令。`--check` 只验证，失败时返回非零状态。
 
 **分析相互作用（自动合并复合物 → 跑 PLIP → PyMOL 出图）：**
 ```bash
