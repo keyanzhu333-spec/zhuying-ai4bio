@@ -173,6 +173,15 @@ RESIDUES = __RESIDUES__  # e.g. ["LYS 745", "ASP 855"]
 LEADER_RADIUS = 9.0
 MIN_ANGULAR_GAP = math.radians(40)
 
+# 接触残基侧链 sticks（橙色高亮），保留相互作用细节；标签另行 callout 外扩
+_contact_nums = [r.rsplit(" ", 1)[1] for r in RESIDUES if r.rsplit(" ", 1)[1].isdigit()]
+if _contact_nums:
+    contact_res = "complex_struct and polymer and (resi " + " or resi ".join(_contact_nums) + ")"
+    cmd.select("contact_residues", contact_res)
+    cmd.show("sticks", "contact_residues and not name C+N+O")
+    cmd.color("orange", "contact_residues and not name C+N+O")
+    cmd.set("cartoon_transparency", 0.5, "contact_residues")
+
 cmd.orient("ligand_local")
 
 lig_atoms = cmd.get_model("ligand_local").atom
